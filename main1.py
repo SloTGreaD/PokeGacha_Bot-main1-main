@@ -7,7 +7,7 @@ from functions import DatabaseConnection
 from info import helpinfo
 from info import rarity
 # Загрузка токена из переменных окружения
-bot = telebot.TeleBot(functions.poke_bot_api)
+bot = telebot.TeleBot(functions.misha_bot_api)
 
 found_pokemon = []
 

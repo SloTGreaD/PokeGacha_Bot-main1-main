@@ -1,6 +1,7 @@
 import random
 import sqlite3
 import time
+from info import helpinfo
 
 from datetime import datetime, timedelta
 misha_bot_api = '5629818025:AAE3CAZFs6uhMcWZodFUdpKhSJu5awmGK_o'
@@ -248,10 +249,8 @@ def time_until_next_midnight():
 
 
 if __name__ == "__main__":
-    # print(show_pokedex(668210174))
-    # print(time_until_next_midnight())
-    a = show_pokedex(668210174)
-    print(a.__next__())
+    print(helpinfo)
+
 
 
 
