@@ -8,23 +8,23 @@ poke_bot_api = "6831587612:AAEUQ4m30-Pajetdnw0AwZ4omaNmzVkc-4o"
 
 pokemon_list = ['Bulbasaur', 'Ivysaur', 'Venusaur', 'Charmander', 'Charmeleon', 'Charizard', 'Squirtle', 'Wartortle', 'Blastoise', 'Caterpie', 'Metapod', 'Butterfree', 'Weedle', 'Kakuna', 'Beedrill', 'Pidgey', 'Pidgeotto', 'Pidgeot', 'Rattata', 'Raticate', 'Spearow', 'Fearow', 'Ekans', 'Arbok', 'Pikachu', 'Raichu', 'Sandshrew', 'Sandslash', 'NidoranF', 'Nidorina', 'Nidoqueen', 'NidoranM', 'Nidorino', 'Nidoking', 'Clefairy', 'Clefable', 'Vulpix', 'Ninetales', 'Jigglypuff', 'Wigglytuff', 'Zubat', 'Golbat', 'Oddish', 'Gloom', 'Vileplume', 'Paras', 'Parasect', 'Venonat', 'Venomoth', 'Diglett', 'Dugtrio', 'Meowth', 'Persian', 'Psyduck', 'Golduck', 'Mankey', 'Primeape', 'Growlithe', 'Arcanine', 'Poliwag', 'Poliwhirl', 'Poliwrath', 'Abra', 'Kadabra', 'Alakazam', 'Machop', 'Machoke', 'Machamp', 'Bellsprout', 'Weepinbell', 'Victreebel', 'Tentacool', 'Tentacruel', 'Geodude', 'Graveler', 'Golem', 'Ponyta', 'Rapidash', 'Slowpoke', 'Slowbro', 'Magnemite', 'Magneton', 'Farfetchd', 'Doduo', 'Dodrio', 'Seel', 'Dewgong', 'Grimer', 'Muk', 'Shellder', 'Cloyster', 'Gastly', 'Haunter', 'Gengar', 'Onix', 'Drowzee', 'Hypno', 'Krabby', 'Kingler', 'Voltorb', 'Electrode', 'Exeggcute', 'Exeggutor', 'Cubone', 'Marowak', 'Hitmonlee', 'Hitmonchan', 'Lickitung', 'Koffing', 'Weezing', 'Rhyhorn', 'Rhydon', 'Chansey', 'Tangela', 'Kangaskhan', 'Horsea', 'Seadra', 'Goldeen', 'Seaking', 'Staryu', 'Starmie', 'Mr_Mime', 'Scyther', 'Jynx', 'Electabuzz', 'Magmar', 'Pinsir', 'Tauros', 'Magikarp', 'Gyarados', 'Lapras', 'Ditto', 'Eevee', 'Vaporeon', 'Jolteon', 'Flareon', 'Porygon', 'Omanyte', 'Omastar', 'Kabuto', 'Kabutops', 'Aerodactyl', 'Snorlax', 'Articuno', 'Zapdos', 'Moltres', 'Dratini', 'Dragonair', 'Dragonite', 'Mewtwo', 'Mew']
 rarity = {
-    "E": ['Bellsprout', 'Caterpie', 'Diglett', 'Ekans', 'Exeggcute', 'Gastly', 'Goldeen', 'Horsea', 'Krabby', 'Magikarp', 'NidoranF', 'NidoranM', 'Oddish', 'Omanyte', 'Paras', 'Pidgey', 'Poliwag', 'Rattata', 'Shellder', 'Spearow', 'Weedle', 'Zubat'],
-    "D": ['Abra', 'Clefairy', 'Dewgong', 'Doduo', 'Drowzee', 'Dugtrio', 'Geodude', 'Grimer', 'Growlithe', 'Kakuna', 'Koffing', 'Machop', 'Magnemite', 'Mankey', 'Meowth', 'Metapod', 'Pidgeotto', 'Psyduck', 'Sandshrew', 'Seel', 'Staryu', 'Tentacool', 'Venonat', 'Voltorb', 'Weepinbell'],
-    "C": ['Beedrill', 'Bulbasaur', 'Chansey', 'Charmander', 'Cubone', 'Eevee', 'Electrode', 'Fearow', 'Gloom', 'Golbat', 'Graveler', 'Haunter', 'Jigglypuff', 'Jynx', 'Kadabra', 'Kingler', 'Nidorina', 'Nidorino', 'Omastar', 'Parasect', 'Persian', 'Pikachu', 'Pinsir', 'Poliwhirl', 'Ponyta', 'Raticate', 'Rhyhorn', 'Seaking', 'Slowpoke', 'Squirtle', 'Tangela', 'Venomoth', 'Vulpix'],
-    "B": ['Arbok', 'Butterfree', 'Charmeleon', 'Clefable', 'Cloyster', 'Dodrio', 'Dratini', 'Electabuzz', 'Exeggutor', 'Golduck', 'Hitmonchan', 'Hitmonlee', 'Hypno', 'Ivysaur', 'Kabuto', 'Kangaskhan', 'Lapras', 'Lickitung', 'Machoke', 'Magmar', 'Magneton', 'Mr_Mime', 'Onix', 'Pidgeot', 'Poliwrath', 'Porygon', 'Primeape', 'Rapidash', 'Sandslash', 'Scyther', 'Seadra', 'Slowbro', 'Starmie', 'Tauros', 'Tentacruel', 'Victreebel', 'Vileplume', 'Wartortle', 'Weezing', 'Wigglytuff'],
-    "A": ['Aerodactyl', 'Alakazam', 'Arcanine', 'Blastoise', 'Charizard', 'Dragonair', 'Farfetchd', 'Flareon', 'Gengar', 'Golem', 'Gyarados', 'Jolteon', 'Kabutops', 'Machamp', 'Marowak', 'Muk', 'Nidoking', 'Nidoqueen', 'Ninetales', 'Raichu', 'Rhydon', 'Snorlax', 'Vaporeon', 'Venusaur'],
-    "S": ['Zapdos', 'Moltres', 'Mewtwo', 'Mew', 'Dragonite', 'Ditto', 'Articuno']
+    "Common": ['Bellsprout', 'Caterpie', 'Diglett', 'Ekans', 'Exeggcute', 'Gastly', 'Goldeen', 'Horsea', 'Krabby', 'Magikarp', 'NidoranF', 'NidoranM', 'Oddish', 'Omanyte', 'Paras', 'Pidgey', 'Poliwag', 'Rattata', 'Shellder', 'Spearow', 'Weedle', 'Zubat'],
+    "Uncommon": ['Abra', 'Clefairy', 'Dewgong', 'Doduo', 'Drowzee', 'Dugtrio', 'Geodude', 'Grimer', 'Growlithe', 'Kakuna', 'Koffing', 'Machop', 'Magnemite', 'Mankey', 'Meowth', 'Metapod', 'Pidgeotto', 'Psyduck', 'Sandshrew', 'Seel', 'Staryu', 'Tentacool', 'Venonat', 'Voltorb', 'Weepinbell'],
+    "Rare": ['Beedrill', 'Bulbasaur', 'Chansey', 'Charmander', 'Cubone', 'Eevee', 'Electrode', 'Fearow', 'Gloom', 'Golbat', 'Graveler', 'Haunter', 'Jigglypuff', 'Jynx', 'Kadabra', 'Kingler', 'Nidorina', 'Nidorino', 'Omastar', 'Parasect', 'Persian', 'Pikachu', 'Pinsir', 'Poliwhirl', 'Ponyta', 'Raticate', 'Rhyhorn', 'Seaking', 'Slowpoke', 'Squirtle', 'Tangela', 'Venomoth', 'Vulpix'],
+    "SuperRare": ['Arbok', 'Butterfree', 'Charmeleon', 'Clefable', 'Cloyster', 'Dodrio', 'Dratini', 'Electabuzz', 'Exeggutor', 'Golduck', 'Hitmonchan', 'Hitmonlee', 'Hypno', 'Ivysaur', 'Kabuto', 'Kangaskhan', 'Lapras', 'Lickitung', 'Machoke', 'Magmar', 'Magneton', 'Mr_Mime', 'Onix', 'Pidgeot', 'Poliwrath', 'Porygon', 'Primeape', 'Rapidash', 'Sandslash', 'Scyther', 'Seadra', 'Slowbro', 'Starmie', 'Tauros', 'Tentacruel', 'Victreebel', 'Vileplume', 'Wartortle', 'Weezing', 'Wigglytuff'],
+    "Epic": ['Aerodactyl', 'Alakazam', 'Arcanine', 'Blastoise', 'Charizard', 'Dragonair', 'Farfetchd', 'Flareon', 'Gengar', 'Golem', 'Gyarados', 'Jolteon', 'Kabutops', 'Machamp', 'Marowak', 'Muk', 'Nidoking', 'Nidoqueen', 'Ninetales', 'Raichu', 'Rhydon', 'Snorlax', 'Vaporeon', 'Venusaur'],
+    "Legendary": ['Zapdos', 'Moltres', 'Mewtwo', 'Mew', 'Dragonite', 'Ditto', 'Articuno']
 }
 
 generations = {'Bellsprout': '', 'Caterpie': '', 'Diglett': '', 'Ekans': '', 'Exeggcute': '', 'Gastly': '', 'Goldeen': '', 'Horsea': '', 'Krabby': '', 'Magikarp': '', 'NidoranF': '', 'NidoranM': '', 'Oddish': '', 'Omanyte': '', 'Paras': '', 'Pidgey': '', 'Poliwag': '', 'Rattata': '', 'Shellder': '', 'Spearow': '', 'Weedle': '', 'Zubat': '', 'Abra': '', 'Clefairy': '', 'Dewgong': "Seel's evolution", 'Doduo': '', 'Drowzee': '', 'Dugtrio': "Diglett's evolution", 'Geodude': '', 'Grimer': '', 'Growlithe': '', 'Kakuna': "Weedle's 1'st evolution", 'Koffing': '', 'Machop': '', 'Magnemite': '', 'Mankey': '', 'Meowth': '', 'Metapod': "Caterpie's 1'st evolution", 'Pidgeotto': "Pidgey's 1'st evolution", 'Psyduck': '', 'Sandshrew': '', 'Seel': '', 'Staryu': '', 'Tentacool': '', 'Venonat': '', 'Voltorb': '', 'Weepinbell': "Bellsprout's 1'st evolution", 'Beedrill': "Weedle's 2'nd evolution", 'Bulbasaur': '', 'Chansey': '', 'Charmander': '', 'Cubone': '', 'Eevee': '', 'Electrode': "Voltorb's evolution", 'Fearow': "Spearow's evolution", 'Gloom': "Oddish's 1'st evolution", 'Golbat': "Zubat's evolution", 'Graveler': "Geodude's 1'st evolution", 'Haunter': "Gastly's 1'st evolution", 'Jigglypuff': '', 'Jynx': '', 'Kadabra': "Abra's 1'st evolution", 'Kingler': "Krabby's evolution", 'Nidorina': "NidoranF's 1'st evolution", 'Nidorino': "NidoranM's evolution", 'Omastar': "Omanyte's evolution", 'Parasect': "Paras's evolution", 'Persian': "Meowth's evolution", 'Pikachu': '', 'Pinsir': '', 'Poliwhirl': "Poliwag's 1'st evolution", 'Ponyta': '', 'Raticate': "Rattata's evolution", 'Rhyhorn': '', 'Seaking': "Goldeen's evolution", 'Slowpoke': '', 'Squirtle': '', 'Tangela': '', 'Venomoth': "Venonat's evolution", 'Vulpix': '', 'Arbok': "Ekan's evolution", 'Butterfree': "Caterpie's 2'nd evolution", 'Charmeleon': "Charmander's 1'st evolution", 'Clefable': "Clefairy's evolution", 'Cloyster': "Shellder's evolution", 'Dodrio': "Doduo's evolution", 'Dratini': '', 'Electabuzz': '', 'Exeggutor': "Exeggcute's evolution", 'Golduck': "Psyduck's evolution", 'Hitmonchan': '', 'Hitmonlee': '', 'Hypno': "Drowzee's evolution", 'Ivysaur': "Bulbasaur's 1'st evolution", 'Kabuto': '', 'Kangaskhan': '', 'Lapras': '', 'Lickitung': '', 'Machoke': "Machop's 1'st evolution", 'Magmar': '', 'Magneton': "Magnemite's evolution", 'Mr_Mime': '', 'Onix': '', 'Pidgeot': "Pidgey's 2'st evolution", 'Poliwrath': "Poliwag's 2'nd evolution", 'Porygon': '', 'Primeape': "Mankey's evolution", 'Rapidash': "Ponyta's evolution", 'Sandslash': "Sandshrew's evolution", 'Scyther': '', 'Seadra': "Horsea's evolution", 'Slowbro': "Slowpoke's evolution", 'Starmie': "Staryu's evolution", 'Tauros': '', 'Tentacruel': "Tentacool's evolution", 'Victreebel': "Bellsprout's 2'nd evolution", 'Vileplume': "Oddish's 2'nd evolution", 'Wartortle': "Squirtle's 1'st evolution", 'Weezing': "Koffing's evolution", 'Wigglytuff': "Jigglypuff's evolution", 'Aerodactyl': '', 'Alakazam': "Abra's 2'nd evolution", 'Arcanine': "Growlithe's evolution", 'Blastoise': "Squirtle's 2'nd evolution", 'Charizard': "Charmander's 2'nd evolution", 'Dragonair': "Dratini's 1'st evolution", 'Farfetchd': '', 'Flareon': "Eevee's evolution", 'Gengar': "Gastly's 2'nd evolution", 'Golem': "Geodude's 2'nd evolution", 'Gyarados': "Magikarp's evolution", 'Jolteon': "Eevee's evolution", 'Kabutops': "Kabuto's evolution", 'Machamp': "Machop's 2'nd evolution", 'Marowak': "Cubone's evolution", 'Muk': "Grimer's evolution", 'Nidoking': "NidoranM's evolution", 'Nidoqueen': "Nidorina's evolution", 'Ninetales': "Vulpix's evolution", 'Raichu': "Pikachu's evolution", 'Rhydon': "Rhyhorn's evolution", 'Snorlax': '', 'Vaporeon': "Eevee's evolution", 'Venusaur': "Bulbasaur's 2'nd evolution", 'Zapdos': '', 'Moltres': '', 'Mewtwo': '', 'Mew': '', 'Dragonite': "Dratini's 2'nd evolution", 'Ditto': '', 'Articuno': ''}
 
 def pokemon_catch():  # возвращает рандомное имя покемона в зависимости от их вероятности выпадения
-    dictio = {"E":'600',
-              "D":'230',
-              "C":'120',       # key - веротность выпаения покемона, value -  list с именами покемонов
-              "B":'30',
-              "A":'19',   # вероятности должны быть написаны целыми числами
-              "S":'1'}
+    dictio = {"Common":'600',
+              "Uncommon":'230',
+              "Rare":'120',       # key - веротность выпаения покемона, value -  list с именами покемонов
+              "SuperRare":'30',
+              "Epic":'19',   # вероятности должны быть написаны целыми числами
+              "Legendary":'1'}
 
 
 
@@ -102,7 +102,16 @@ def create_all_tables():
             )
             ''')
         cur.execute('CREATE TABLE IF NOT EXISTS users (name varchar(50))')
-    
+        
+        cur.execute('''CREATE TABLE IF NOT EXISTS dif_rarity 
+                    (user_id INTEGER,
+                     legendary VARCHAR(30),
+                     epic VARCHAR(30),
+                    superrare VARCHAR(30),
+                     rare VARCHAR(30),
+                     uncommon VARCHAR(30),
+                     common VARCHAR(30)
+                    )''')
 
 def add_user_to_number_of_pokemons(user_id):
     with DatabaseConnection('pokedex.sql') as cur:
@@ -125,6 +134,7 @@ def capture_pokemon(user_id, found_pokemon): #добавляет названи�
         if pokebol_count > 0:
             found_pokemon = found_pokemon.lower()
             # Выполняем логику захвата
+
             cap = "INSERT INTO captured_pokemons (user_id, found_pokemon) VALUES (?, ?)"
             cur.execute(cap, (user_id, found_pokemon))
             query = f"UPDATE number_of_pokemons SET {found_pokemon} = {found_pokemon} + 1, pokebols = pokebols - 1 WHERE user_id = ?"
@@ -135,6 +145,40 @@ def capture_pokemon(user_id, found_pokemon): #добавляет названи�
             success = False
 
     
+    return success
+def capture_pokemon_by_rarity(user_id, found_pokemon, gen):
+    with DatabaseConnection('pokedex.sql') as cur:
+        # Проверяем количество pokebols у пользователя
+        num = 'SELECT pokebols FROM number_of_pokemons WHERE user_id = ?'
+        cur.execute(num, (user_id,))
+        pokebol_count = cur.fetchone()[0]
+
+        if pokebol_count > 0:
+            found_pokemon = found_pokemon.lower()
+            # Выполняем логику захвата
+            if gen == 'Common':
+                cap0 = "INSERT INTO dif_rarity (user_id, common) VALUES (?, ?)"
+                cur.execute(cap0, (user_id, found_pokemon))
+            elif gen == 'Uncommon':
+                cap0 = "INSERT INTO dif_rarity (user_id, uncommon) VALUES (?, ?)"
+                cur.execute(cap0, (user_id, found_pokemon))   
+            elif gen == 'Rare':
+                cap0 = "INSERT INTO dif_rarity (user_id, rare) VALUES (?, ?)"
+                cur.execute(cap0, (user_id, found_pokemon))
+            elif gen == 'SuperRare':
+                cap0 = "INSERT INTO dif_rarity (user_id, superrare) VALUES (?, ?)"
+                cur.execute(cap0, (user_id, found_pokemon)) 
+            elif gen == 'Epic':
+                cap0 = "INSERT INTO dif_rarity (user_id, epic) VALUES (?, ?)"
+                cur.execute(cap0, (user_id, found_pokemon))       
+            elif gen == 'Legendary':
+                cap0 = "INSERT INTO dif_rarity (user_id, legendary) VALUES (?, ?)"
+                cur.execute(cap0, (user_id, found_pokemon))
+                
+            success = True
+        else:
+            success = False
+
     return success
 
 def capture_failed (user_id):
