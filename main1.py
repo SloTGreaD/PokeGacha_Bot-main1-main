@@ -6,6 +6,7 @@ import sqlite3
 from functions import DatabaseConnection
 from info import helpinfo
 from info import rarity
+
 # Загрузка токена из переменных окружения
 bot = telebot.TeleBot(functions.misha_bot_api)
 
@@ -48,10 +49,10 @@ class PokemonBot:
                     print(f"Ошибка при удалении сообщения: {e}")
 
                 if random.choice([True, False]):
-                    self.states[chat_id] = 'choose_catch_or_skip'
+                    
                     self.show_catch_or_skip_buttons(chat_id, pokebol_count)
                 else:
-                    self.states[chat_id] = 'choose_find_or_skip'
+                    
                     self.back_to_start(chat_id, call.message.message_id)
 
             # Обработка нажатия кнопок "Catch", "Retry"
@@ -60,11 +61,11 @@ class PokemonBot:
                     bot.delete_message(call.message.chat.id, call.message.message_id)
 
                 if random.choice([True, False]):
-                    self.states[chat_id] = 'choose_captured_or_retry'
+                    
                     self.show_captured_or_retry_buttons(chat_id, call.message.message_id)
 
                 else:
-                    self.states[chat_id] = 'choose_find_or_skip'
+                    
                     self.show_captured_or_not_buttons(chat_id, call.message.message_id)
 
 
@@ -110,13 +111,13 @@ class PokemonBot:
 
 
 
-    def show_catch_or_skip_buttons(self, chat_id, pokebol_count ):
+    def show_catch_or_skip_buttons(self, chat_id, pokebol_count):
         # Отображение кнопок "Try to Catch" и "Skip" после успешной попытки
         markup = types.InlineKeyboardMarkup()
         button_catch = types.InlineKeyboardButton('Try to Catch', callback_data='catch')
         button_skip = types.InlineKeyboardButton('Skip', callback_data='skip')
         markup.add(button_catch, button_skip)
-
+        
 
         # Отображение случайного покемона с весами
         chosen_pokemon, gen = functions.pokemon_catch() #функция с вероятностями выпадения покемонов в файле functions.py
@@ -126,17 +127,22 @@ class PokemonBot:
             sent_message = bot.send_document(chat_id, pokemon_photo)
             gen_info = functions.generations[chosen_pokemon]
             if gen_info != '': gen_info = f' ({gen_info})'
-            bot.send_message(chat_id, f"You found a {chosen_pokemon}{gen_info}! It has '{gen}' rarity. What would you like to do?\nYou have {pokebol_count} pokebols",  reply_markup=markup)
-            self.states[chat_id] = {'message_id': sent_message.message_id, 'state': 'choose_catch_or_skip'}
+            bot.send_message(chat_id, f"You found a {chosen_pokemon}{gen_info}!\n\n It has '{gen}' rarity.\n\n What would you like to do?\n\nYou have {pokebol_count} pokebols",  reply_markup=markup)
+            self.states[chat_id] = {'state': 'choose_catch_or_skip', 'message_id': sent_message.message_id, 'gen': gen}
+            
+            
 
 
 
     def show_captured_or_retry_buttons(self, chat_id, message_id):
         # Отображение кнопки "Keep going" после успешного захвата
+        gen = self.states[chat_id].get('gen', '')
         markup = types.InlineKeyboardMarkup()
         button_go = types.InlineKeyboardButton('Keep going', callback_data='go')
         markup.add(button_go)
         functions.capture_pokemon(chat_id, f"{found_pokemon[0]}")
+        functions.capture_pokemon_by_rarity(chat_id, f"{found_pokemon[0]}", gen)
+        
         bot.send_message(chat_id, f"You captured a {found_pokemon[0]}!", reply_markup=markup)
 
         #bot.delete_message(chat_id, message_id)
