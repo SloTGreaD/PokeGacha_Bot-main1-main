@@ -36,7 +36,7 @@ def pokemon_catch():  # возвращает рандомное имя поке�
         if counter >= rand_num:
             pokemon_name = random.choice(rarity[key])
             return pokemon_name, key
-        
+
 
 class DatabaseConnection:
     def __init__(self, db_name):
@@ -103,12 +103,12 @@ def create_all_tables():
             )
             ''')
         cur.execute('CREATE TABLE IF NOT EXISTS users (name varchar(50))')
-        
+
         cur.execute('''CREATE TABLE IF NOT EXISTS dif_rarity 
                     (user_id INTEGER,
                      legendary VARCHAR(30),
                      epic VARCHAR(30),
-                    superrare VARCHAR(30),
+                     superrare VARCHAR(30),
                      rare VARCHAR(30),
                      uncommon VARCHAR(30),
                      common VARCHAR(30)
@@ -123,7 +123,7 @@ def add_user_to_number_of_pokemons(user_id):
             insert_query = "INSERT INTO number_of_pokemons (user_id) VALUES (?)"
             cur.execute(insert_query, (user_id,))
 
-    
+
 
 def capture_pokemon(user_id, found_pokemon): #добавляет название покемона в таблицу с временами когда словил покемона и таблицу с количеством словленных покемонов
     with DatabaseConnection('pokedex.sql') as cur:
@@ -140,12 +140,12 @@ def capture_pokemon(user_id, found_pokemon): #добавляет названи�
             cur.execute(cap, (user_id, found_pokemon))
             query = f"UPDATE number_of_pokemons SET {found_pokemon} = {found_pokemon} + 1, pokebols = pokebols - 1 WHERE user_id = ?"
             cur.execute(query, (user_id,))
-        
+
             success = True
         else:
             success = False
 
-    
+
     return success
 def capture_pokemon_by_rarity(user_id, found_pokemon, gen):
     with DatabaseConnection('pokedex.sql') as cur:
@@ -162,25 +162,50 @@ def capture_pokemon_by_rarity(user_id, found_pokemon, gen):
                 cur.execute(cap0, (user_id, found_pokemon))
             elif gen == 'Uncommon':
                 cap0 = "INSERT INTO dif_rarity (user_id, uncommon) VALUES (?, ?)"
-                cur.execute(cap0, (user_id, found_pokemon))   
+                cur.execute(cap0, (user_id, found_pokemon))
             elif gen == 'Rare':
                 cap0 = "INSERT INTO dif_rarity (user_id, rare) VALUES (?, ?)"
                 cur.execute(cap0, (user_id, found_pokemon))
             elif gen == 'SuperRare':
                 cap0 = "INSERT INTO dif_rarity (user_id, superrare) VALUES (?, ?)"
-                cur.execute(cap0, (user_id, found_pokemon)) 
+                cur.execute(cap0, (user_id, found_pokemon))
             elif gen == 'Epic':
                 cap0 = "INSERT INTO dif_rarity (user_id, epic) VALUES (?, ?)"
-                cur.execute(cap0, (user_id, found_pokemon))       
+                cur.execute(cap0, (user_id, found_pokemon))
             elif gen == 'Legendary':
                 cap0 = "INSERT INTO dif_rarity (user_id, legendary) VALUES (?, ?)"
                 cur.execute(cap0, (user_id, found_pokemon))
-                
+
             success = True
         else:
             success = False
 
     return success
+
+def show_pokedex_rarity(user_id, requested_rarity):
+        with DatabaseConnection('pokedex.sql') as cur:
+            num = 'SELECT * FROM number_of_pokemons WHERE user_id = ?'
+            cur.execute(num, (user_id,))
+            pokemon_amount = cur.fetchone()[3:]
+            pokemons_in_requested_rarity = ("\n".join(f'{pokemon} {"🟢" if amount>0 else "🔴"}' for pokemon, amount in zip(pokemon_list, pokemon_amount) if pokemon in rarity[requested_rarity]))
+
+
+        return pokemons_in_requested_rarity
+
+
+def show_inventory_rarity(user_id, requested_rarity):
+    with DatabaseConnection('pokedex.sql') as cur:
+        num4 = 'SELECT * FROM number_of_pokemons WHERE user_id = ?'
+        cur.execute(num4, (user_id,))
+        pokemons = cur.fetchone()
+
+        if pokemons is None:
+            return "You haven't caught any Pokémon yet."
+
+        pokebols = f'Your {requested_rarity} rarity pokemons:\nPokebols: {pokemons[2]}'
+        text = '\n'.join((pokebols,"\n".join(f'{pokemon_name}: {poke_count}' for poke_count, pokemon_name in zip(pokemons[3:], pokemon_list) if poke_count > 0 and pokemon_name in rarity[requested_rarity])))
+
+    return text
 
 def capture_failed (user_id):
     with DatabaseConnection('pokedex.sql') as cur:
@@ -191,7 +216,7 @@ def capture_failed (user_id):
         if pokebol_count > 0:
             num2 = "UPDATE number_of_pokemons SET pokebols = pokebols - 1 WHERE user_id = ?"
             cur.execute(num2, (user_id,))
-        
+
 
 def show_capture_time(user_id): #показывает время когда словил каждого покемона
     with DatabaseConnection('pokedex.sql') as cur:
@@ -202,11 +227,11 @@ def show_capture_time(user_id): #показывает время когда сл
         for el in info:
             # Убедитесь, что здесь правильно форматируете строку, например:
             pokedex += f"Pokemon: {el[1]}, Captured At: {el[2]}\n"
-    
+
     return pokedex
 
 
-def show_pokedex(user_id):
+def show_pokedex_all(user_id):
     with DatabaseConnection('pokedex.sql') as cur:
         num3 = 'SELECT * FROM number_of_pokemons WHERE user_id = ?'
         cur.execute(num3, (user_id,))
@@ -215,7 +240,7 @@ def show_pokedex(user_id):
         pokemons = ("".join(f'{pokemon} {"🟢" if amount>0 else "🔴"}') for pokemon, amount in zip(pokemon_list, pokemon_amount))
         lines = (f"{num}. {pokemon}" for num, pokemon in enumerate(pokemons, 1))
         lines_list = list(lines)
-        
+
         while True:
             #разбивает лист на равные куски по 25 покемонов, (последний кусок 26) и возвращает ганератор с нужным текстом
             for chunk_start in range(0, 150, 25):
@@ -233,7 +258,7 @@ def my_pokemons(user_id):
 
         if pokemons is None:
             return "You haven't caught any Pokémon yet."
-        
+
         text = f'You have:\nPokebols: {pokemons[2]}'
         # for poke_count, pokemon_name in zip(pokemons[3:], pokemon_list):
         #     if poke_count > 0:
@@ -246,7 +271,7 @@ def my_pokemons(user_id):
         # Bulbasaur: {pokemons[5]}
         # Charmander: {pokemons[6]}
         # """
-    
+
     return text
 
 def add_pokebols(user_id, amount, cur):
@@ -293,7 +318,8 @@ def time_until_next_midnight():
 
 
 if __name__ == "__main__":
-    print(helpinfo)
+    start = time.time()
+    print(show_inventory_rarity(668210174, "Legendary"))
 
 
 

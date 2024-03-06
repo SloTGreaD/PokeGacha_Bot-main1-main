@@ -60,7 +60,7 @@ class PokemonBot:
                 if call.data == 'retry':
                     bot.delete_message(call.message.chat.id, call.message.message_id)
 
-                if random.choice([True, False]):
+                if random.choice([True, False]): #добавить логику с редкостями сюда
                     
                     self.show_captured_or_retry_buttons(chat_id, call.message.message_id)
 
@@ -95,7 +95,7 @@ class PokemonBot:
 
 
     def show_pokedex(self, chat_id):
-        self.generator = functions.show_pokedex(chat_id)
+        self.generator = functions.show_pokedex_all(chat_id)
         markup = types.InlineKeyboardMarkup()
         next_list = types.InlineKeyboardButton('Next', callback_data='next')
         markup.add(next_list)
@@ -117,7 +117,6 @@ class PokemonBot:
         button_catch = types.InlineKeyboardButton('Try to Catch', callback_data='catch')
         button_skip = types.InlineKeyboardButton('Skip', callback_data='skip')
         markup.add(button_catch, button_skip)
-        
 
         # Отображение случайного покемона с весами
         chosen_pokemon, gen = functions.pokemon_catch() #функция с вероятностями выпадения покемонов в файле functions.py
