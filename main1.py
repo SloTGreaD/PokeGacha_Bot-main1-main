@@ -1,39 +1,50 @@
-import telebot
-from telebot import types
+
+import aiosqlite
+from aiogram import Bot, Dispatcher, types
+from aiogram.dispatcher.filters import Text
+from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+import asyncio
 import random
+from info import helpinfo, rarity
 import functions
-import sqlite3
-from functions import DatabaseConnection
-from info import helpinfo
-from info import rarity
 
 # Загрузка токена из переменных окружения
-bot = telebot.TeleBot(functions.misha_bot_api)
+TOKEN = functions.poke_bot_api
+bot = Bot(token=TOKEN)
+dp = Dispatcher(bot)
 
 found_pokemon = []
+class AsyncDatabaseConnection:
+    def __init__(self, db_name):
+        self.db_name = db_name
+        self.conn = None
 
+    async def __aenter__(self):
+        self.conn = await aiosqlite.connect(self.db_name)
+        return await self.conn.cursor()
 
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        await self.conn.commit()
+        await self.conn.close()
 class PokemonBot:
 
-
     def __init__(self):
-        # Словарь для хранения состояний пользователей
         self.states = {}
         self.generator = None
-        # Создаем таблицу для спойманных покемонов
-        functions.create_all_tables()
 
-    def start(self, message):
+    async def async_init(self):
+        await functions.create_all_tables()
 
-        functions.add_user_to_number_of_pokemons(message.chat.id) #добавляет только новых юзеров
-        # Приветственное сообщение при старте
-        bot.send_message(message.chat.id, f"Hi, {message.from_user.first_name}!\nWelcome to Poké-Hunter. This bot allows you to search and catch Pokémons.\nPress /go to start your adventure.\nPress /help for more information.")
+    async def start(self, message):
+        await functions.add_user_to_number_of_pokemons(message.chat.id)
+        await bot.send_message(message.chat.id, f"Hi, {message.from_user.first_name}!\nWelcome to Poké-Hunter. This bot allows you to search and catch Pokémons.\nPress /go to start your adventure.\nPress /help for more information.")
 
 
-    def handle_go_callback(self, call):
-        chat_id = call.message.chat.id # Для простоты предполагаем, что user_id и chat_id идентичны
+    async def handle_go_callback(self, call):
+        chat_id = call.message.chat.id  # Для простоты предполагаем, что user_id и chat_id идентичны
 
-        pokebol_count = functions.pokebols_number(chat_id)
+        # Используйте `await` для асинхронного получения количества pokebols
+        pokebol_count = await functions.pokebols_number(chat_id)
 
         if pokebol_count > 0:
             # Обработка нажатия кнопок "Go", "Keep going", "Skip"
@@ -41,133 +52,138 @@ class PokemonBot:
                 found_pokemon.clear()
                 try:
                     if call.data in ['keepgoing', 'skip']:
-                        bot.delete_message(call.message.chat.id, call.message.message_id)
-                       # удаляет сообщение в котором было нажато "keepgoing, skip"
-                    if call.data in ['skip']:
-                        bot.delete_message(call.message.chat.id, call.message.message_id-1)
+                        await bot.delete_message(call.message.chat.id, call.message.message_id)
+                    if call.data == 'skip':
+                        await bot.delete_message(call.message.chat.id, call.message.message_id-1)
                 except Exception as e:
                     print(f"Ошибка при удалении сообщения: {e}")
 
                 if random.choice([True, False]):
-                    
-                    self.show_catch_or_skip_buttons(chat_id, pokebol_count)
+                    await self.show_catch_or_skip_buttons(chat_id, pokebol_count)
                 else:
-                    
-                    self.back_to_start(chat_id, call.message.message_id)
+                    await self.back_to_start(chat_id, call.message.message_id)
 
             # Обработка нажатия кнопок "Catch", "Retry"
             elif call.data in ['catch', 'retry']:
                 if call.data == 'retry':
-                    bot.delete_message(call.message.chat.id, call.message.message_id)
+                    await bot.delete_message(call.message.chat.id, call.message.message_id)
 
-                if random.choice([True, False]): #добавить логику с редкостями сюда
+                if random.choice([True, False]):
                     
-                    self.show_captured_or_retry_buttons(chat_id, call.message.message_id)
+                    await self.show_captured_or_retry_buttons(chat_id, call.message.message_id)
 
                 else:
                     
-                    self.show_captured_or_not_buttons(chat_id, call.message.message_id)
+                    await self.show_captured_or_not_buttons(chat_id, call.message.message_id)
 
 
         else:
-            bot.send_message(chat_id, "У вас нет pokebol! Найдите или купите их, чтобы продолжить ловлю покемонов.")
+            await bot.send_message(chat_id, "У вас нет pokebol! Найдите или купите их, чтобы продолжить ловлю покемонов.")
             #на будущее: нужно придумать какое то продолжение для пользователя после этого сообщения
 
 
 
 
-    def show_go_buttons(self, chat_id):
+    async def show_go_buttons(self, chat_id):
         # Отправка кнопки "Go" для начала поиска покемона
         markup = types.InlineKeyboardMarkup()
-
         button_go = types.InlineKeyboardButton('Go', callback_data='go')
         markup.add(button_go)
+        await bot.send_message(chat_id, "Press 'Go' to start searching for a Pokemon:", reply_markup=markup)
 
-        bot.send_message(chat_id, "Press 'Go' to start searching for a Pokemon:", reply_markup=markup)
-
-    def back_to_start(self, chat_id, message_id):
+    async def back_to_start(self, chat_id, message_id):
         # Возвращение к начальному состоянию после неудачной попытки
         markup = types.InlineKeyboardMarkup()
         button_back = types.InlineKeyboardButton('Keep going', callback_data='keepgoing')
         markup.add(button_back)
-        bot.send_message(chat_id, 'You did not find anything', reply_markup=markup)
+        await bot.send_message(chat_id, 'You did not find anything', reply_markup=markup)
         #bot.delete_message(chat_id, message_id)
 
 
-    def show_pokedex(self, chat_id):
-        self.generator = functions.show_pokedex_all(chat_id)
-        markup = types.InlineKeyboardMarkup()
-        next_list = types.InlineKeyboardButton('Next', callback_data='next')
-        markup.add(next_list)
-        bot.send_message(chat_id, next(self.generator), reply_markup=markup)
+    async def show_pokedex(self, chat_id):
+        async for pokedex_page in functions.show_pokedex(chat_id):
+            markup = types.InlineKeyboardMarkup()
+            next_list = types.InlineKeyboardButton('Next', callback_data='next')
+            markup.add(next_list)
+            # Используйте pokedex_page для отправки текущего содержимого страницы
+            await bot.send_message(chat_id, pokedex_page, reply_markup=markup)
 
-    def my_pokemons(self, chat_id):
-        pokemons = functions.my_pokemons(chat_id)
+    async def my_pokemons(self, chat_id):
+        pokemons = await functions.my_pokemons(chat_id)
         # Проверка на пустую строку 'pokedex' перед отправкой
         if pokemons.strip() == '':
-            bot.send_message(chat_id, "No Pokemons have been captured yet.")
+            await bot.send_message(chat_id, "No Pokemons have been captured yet.")
         else:
-            bot.send_message(chat_id, pokemons)
+            await bot.send_message(chat_id, pokemons)
 
 
 
-    def show_catch_or_skip_buttons(self, chat_id, pokebol_count):
+    async def show_catch_or_skip_buttons(self, chat_id, pokebol_count):
         # Отображение кнопок "Try to Catch" и "Skip" после успешной попытки
         markup = types.InlineKeyboardMarkup()
         button_catch = types.InlineKeyboardButton('Try to Catch', callback_data='catch')
         button_skip = types.InlineKeyboardButton('Skip', callback_data='skip')
         markup.add(button_catch, button_skip)
+        
 
         # Отображение случайного покемона с весами
         chosen_pokemon, gen = functions.pokemon_catch() #функция с вероятностями выпадения покемонов в файле functions.py
         pokemon_image = f'images/{chosen_pokemon.capitalize()}.webp'
         with open(pokemon_image, 'rb') as pokemon_photo:
             found_pokemon.append(chosen_pokemon)
-            sent_message = bot.send_document(chat_id, pokemon_photo)
+            sent_message = await bot.send_document(chat_id, pokemon_photo)
             gen_info = functions.generations[chosen_pokemon]
             if gen_info != '': gen_info = f' ({gen_info})'
-            bot.send_message(chat_id, f"You found a {chosen_pokemon}{gen_info}!\n\n It has '{gen}' rarity.\n\n What would you like to do?\n\nYou have {pokebol_count} pokebols",  reply_markup=markup)
+            await bot.send_message(chat_id, f"You found a {chosen_pokemon}{gen_info}!\n\n It has '{gen}' rarity.\n\n What would you like to do?\n\nYou have {pokebol_count} pokebols",  reply_markup=markup)
             self.states[chat_id] = {'state': 'choose_catch_or_skip', 'message_id': sent_message.message_id, 'gen': gen}
             
             
 
 
 
-    def show_captured_or_retry_buttons(self, chat_id, message_id):
+    async def show_captured_or_retry_buttons(self, chat_id, message_id):
         # Отображение кнопки "Keep going" после успешного захвата
         gen = self.states[chat_id].get('gen', '')
         markup = types.InlineKeyboardMarkup()
         button_go = types.InlineKeyboardButton('Keep going', callback_data='go')
         markup.add(button_go)
-        functions.capture_pokemon(chat_id, f"{found_pokemon[0]}")
-        functions.capture_pokemon_by_rarity(chat_id, f"{found_pokemon[0]}", gen)
+        await functions.capture_pokemon(chat_id, f"{found_pokemon[0]}")
+        await functions.capture_pokemon_by_rarity(chat_id, f"{found_pokemon[0]}", gen)
         
-        bot.send_message(chat_id, f"You captured a {found_pokemon[0]}!", reply_markup=markup)
+        await bot.send_message(chat_id, f"You captured a {found_pokemon[0]}!", reply_markup=markup)
 
         #bot.delete_message(chat_id, message_id)
 
-    def show_captured_or_not_buttons(self, chat_id, message_id):
+    async def show_captured_or_not_buttons(self, chat_id, message_id):
         # Отображение кнопки "Try again" после неудачной попытки захвата
         markup = types.InlineKeyboardMarkup()
         button_try_again = types.InlineKeyboardButton('Try again', callback_data='retry')
         markup.add(button_try_again)
-        functions.capture_failed(chat_id)
-        bot.send_message(chat_id, 'Bad luck', reply_markup=markup)
+        await functions.capture_failed(chat_id)
+        await bot.send_message(chat_id, 'Bad luck', reply_markup=markup)
         #bot.delete_message(chat_id, message_id)
 
-    def get_pokebols(self, user_id):
-        with DatabaseConnection('pokedex.sql') as cur:
-            can_get_pokebols = functions.check_pokebols_elegibility(user_id) #возвращает True or False
+    async def get_pokebols(self, user_id):
+        async with AsyncDatabaseConnection('pokedex.sql') as cur:
+            can_get_pokebols = await functions.check_pokebols_elegibility(user_id) #возвращает True or False
             text = functions.time_until_next_midnight()
             if can_get_pokebols:
-                functions.add_pokebols(user_id, 50, cur)
-                bot.send_message(user_id, f'Вы получили 50 бесплатных покеболов. До следующего бесплатного получения осталось {text}')
+                await functions.add_pokebols(user_id, 50, cur)
+                await bot.send_message(user_id, f'Вы получили 50 бесплатных покеболов. До следующего бесплатного получения осталось {text}')
             else:
-                bot.send_message(user_id, f'К сожалению вы еще не можете получить бесплатные покеболы. Дождитесь следующего дня. Осталось ждать: {text}')
+                await bot.send_message(user_id, f'К сожалению вы еще не можете получить бесплатные покеболы. Дождитесь следующего дня. Осталось ждать: {text}')
         
     def run(self):
         # Запуск бота в режиме бесконечного опроса
-        bot.infinity_polling()
+        dp.infinity_polling()
+
+async def main():
+    try:
+        pokemon_bot = PokemonBot()
+        await pokemon_bot.async_init()
+        await dp.start_polling()
+    finally:
+        await bot.session.close()
 
 # Если файл запущен напрямую (а не импортирован как модуль)
 if __name__ == "__main__":
@@ -175,58 +191,49 @@ if __name__ == "__main__":
     pokemon_bot = PokemonBot()
 
     # Обработчики сообщений и колбеков
-    @bot.message_handler(commands=['start'])
-    def start_wrapper(message):
-        pokemon_bot.start(message)
+    @dp.message_handler(commands=['start'])
+    async def start_wrapper(message: types.Message):
+        await pokemon_bot.start(message)
 
-    @bot.message_handler(commands=['pokedex'])
-    def deploy_pokedex(message):
+    @dp.message_handler(commands=['pokedex'])
+    async def deploy_pokedex(message: types.Message):
         chat_id = message.chat.id
-        pokemon_bot.show_pokedex(chat_id)
+        await pokemon_bot.show_pokedex(chat_id)
 
-    @bot.message_handler(commands=['go'])
-    def show_go_message(message):
+    @dp.message_handler(commands=['go'])
+    async def show_go_message(message: types.Message):
         chat_id = message.chat.id
-        pokemon_bot.show_go_buttons(chat_id)
+        await pokemon_bot.show_go_buttons(chat_id)
 
-    @bot.message_handler(commands=['help'])
-    def help_command(message):
-        bot.send_message(message.chat.id, helpinfo, parse_mode='html')
+    @dp.message_handler(commands=['help'])
+    async def help_command(message: types.Message):
+        await bot.send_message(message.chat.id, helpinfo, parse_mode='HTML')
 
-    @bot.message_handler(commands=['get_pokebols'])
-    def get_pokebols(message):
-        pokemon_bot.get_pokebols(message.chat.id)
+    @dp.message_handler(commands=['get_pokebols'])
+    async def get_pokebols_handler(message: types.Message):
+        await pokemon_bot.get_pokebols(message.chat.id)
 
-    @bot.message_handler(commands=['my_pokemons'])
-    def get_pokebols(message):
-        pokemon_bot.my_pokemons(message.chat.id)
+    @dp.message_handler(commands=['my_pokemons'])
+    async def my_pokemons_handler(message: types.Message):
+        await pokemon_bot.my_pokemons(message.chat.id)
     
-    @bot.message_handler(commands=['rarity'])
-    def rarity_command(message):
-        bot.send_message(message.chat.id, rarity, parse_mode='html')
+    @dp.message_handler(commands=['rarity'])
+    async def rarity_command(message: types.Message):
+        await bot.send_message(message.chat.id, rarity, parse_mode='HTML')
 
-    @bot.callback_query_handler(func=lambda call: call.data == "next")
-    def scroll_to_next(call):
-        markup = types.InlineKeyboardMarkup()
-        next_list = types.InlineKeyboardButton('Next', callback_data='next')
+    @dp.callback_query_handler(Text(equals="next"))
+    async def scroll_to_next(call: types.CallbackQuery):
+        markup = InlineKeyboardMarkup()
+        next_list = InlineKeyboardButton('Next', callback_data='next')
         markup.add(next_list)
         try:
-            bot.edit_message_text(next(pokemon_bot.generator), call.message.chat.id, call.message.message_id, reply_markup=markup)
-        except TypeError:
-            bot.edit_message_text('This Pokedex is not valid anymore, press /pokedex to get up-to-date version', call.message.chat.id, call.message.message_id)
+            await bot.edit_message_text(next(pokemon_bot.generator), call.message.chat.id, call.message.message_id, reply_markup=markup)
+        except StopIteration:
+            await bot.edit_message_text('This Pokedex is not valid anymore, press /pokedex to get up-to-date version', call.message.chat.id, call.message.message_id)
 
-    @bot.callback_query_handler(func=lambda call: call.data in ['go', 'keepgoing', 'skip', 'retry', 'catch'])
-    def handle_go_callback_wrapper(call):
-        markup = types.InlineKeyboardMarkup()
-        bot.edit_message_reply_markup(call.message.chat.id, call.message.message_id, reply_markup=markup)
-        pokemon_bot.handle_go_callback(call)
-
-
-    @bot.callback_query_handler(func=lambda call: True)
-    def callback_handler_wrapper(call):
-        markup = types.InlineKeyboardMarkup()
-        bot.edit_message_reply_markup(call.message.chat.id, call.message.message_id, reply_markup=markup)
-        pokemon_bot.callback_handler(call)
+    @dp.callback_query_handler(Text(equals=['go', 'keepgoing', 'skip', 'retry', 'catch']))
+    async def handle_go_callback_wrapper(call: types.CallbackQuery):
+        await pokemon_bot.handle_go_callback(call)
 
     # Запуск бота
-    pokemon_bot.run()
+    asyncio.run(main())
