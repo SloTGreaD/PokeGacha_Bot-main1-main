@@ -105,7 +105,8 @@ async def capture_pokemon(user_id, found_pokemon):
         else:
             success = False
     return success
-async def capture_pokemon_by_rarity(user_id, found_pokemon, gen):
+
+async def capture_pokemon_by_rarity(user_id, found_pokemon, gen): #все еще не понимаю зачем эта функция
     async with AsyncDatabaseConnection('pokedex.sql') as cur:
         # Проверяем количество pokebols у пользователя
         num = 'SELECT pokebols FROM number_of_pokemons WHERE user_id = ?'
@@ -170,7 +171,7 @@ async def show_pokedex_all(user_id):
         #собирает всю информацию о покемонах и конкатенирует все в лист_lines_list
         pokemon_amount = await cur.fetchone()
         pokemon_amount = pokemon_amount[3:]
-        pokemons = ("".join(f'{pokemon} {"🟢" if amount>0 else "🔴"}') for pokemon, amount in zip(pokemon_list, pokemon_amount))
+        pokemons = (f'{pokemon} {"🟢" if amount>0 else "🔴"}' for pokemon, amount in zip(pokemon_list, pokemon_amount))
         lines = (f"{num}. {pokemon}" for num, pokemon in enumerate(pokemons, 1))
         lines_list = list(lines)
         while True:
@@ -193,7 +194,31 @@ async def show_pokedex_rarity(user_id, requested_rarity):
 
     return pokemons_in_requested_rarity
 
-async def inventory(user_id):
+async def inventory_all(user_id):
+    async with AsyncDatabaseConnection('pokedex.sql') as cur:
+        num4 = 'SELECT * FROM number_of_pokemons WHERE user_id = ?'
+        await cur.execute(num4, (user_id,))
+        pokemons = await cur.fetchone()
+        
+        start = [f'You have:\nPokebols: {pokemons[2]}']
+        pokemons_amount = (f'{pokemon_name}: {poke_count}' for poke_count, pokemon_name in zip(pokemons[3:], pokemon_list) if poke_count > 0)
+        text = start + [f'{num}. {pokemon}' for num, pokemon in enumerate(pokemons_amount, 1)]
+        lenght = len(text)
+        max = 20
+        if lenght <= max:
+            while True:
+                yield "\n".join(text)
+
+        else:
+            amount_of_tables = (lenght // max) + 1
+            pokemon_amount_in_each_table = (lenght // amount_of_tables) + 1
+            while True:
+                for chunk_start in range(0, lenght, pokemon_amount_in_each_table):
+                    yield '\n'.join(text[chunk_start: chunk_start + pokemon_amount_in_each_table])
+
+
+
+async def show_inventory_rarity(user_id, requested_rarity):
     async with AsyncDatabaseConnection('pokedex.sql') as cur:
         num4 = 'SELECT * FROM number_of_pokemons WHERE user_id = ?'
         await cur.execute(num4, (user_id,))
@@ -201,20 +226,10 @@ async def inventory(user_id):
 
         if pokemons is None:
             return "You haven't caught any Pokémon yet."
-        
-        text = f'You have:\nPokebols: {pokemons[2]}'
-        # for poke_count, pokemon_name in zip(pokemons[3:], pokemon_list):
-        #     if poke_count > 0:
-        #         text += f'{pokemon_name}: {poke_count}\n'
-        text = '\n'.join((text,"\n".join(f'{pokemon_name}: {poke_count}' for poke_count, pokemon_name in zip(pokemons[3:], pokemon_list) if poke_count > 0)))
-        #     text = f"""You have:
-        # Pokebols: {pokemons[2]}
-        # Pikachu: {pokemons[3]}
-        # Squirtle: {pokemons[4]}
-        # Bulbasaur: {pokemons[5]}
-        # Charmander: {pokemons[6]}
-        # """
-    
+
+        pokebols = f'Your {requested_rarity} rarity pokemons:\nPokebols: {pokemons[2]}'
+        text = '\n'.join((pokebols,"\n".join(f'{pokemon_name}: {poke_count}' for poke_count, pokemon_name in zip(pokemons[3:], pokemon_list) if poke_count > 0 and pokemon_name in rarity[requested_rarity])))
+
     return text
 
 async def add_pokebols(user_id, amount):
@@ -263,8 +278,8 @@ def time_until_next_midnight():
 async def main():
     # print(show_pokedex(668210174))
     # print(time_until_next_midnight())
-    print(await show_pokedex_rarity(668210174, "Legendary"))
-
+    a = "mivtpox_pokedex"
+    print(a.rstrip("_pokedx"))
 
 if __name__ == "__main__":
     asyncio.run(main())
