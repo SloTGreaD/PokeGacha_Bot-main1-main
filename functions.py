@@ -237,10 +237,9 @@ def show_pokedex_all(user_id):
         cur.execute(num3, (user_id,))
         #собирает всю информацию о покемонах и конкатенирует все в лист_lines_list
         pokemon_amount = cur.fetchone()[3:]
-        pokemons = ("".join(f'{pokemon} {"🟢" if amount>0 else "🔴"}') for pokemon, amount in zip(pokemon_list, pokemon_amount))
+        pokemons = (f'{pokemon} {"🟢" if amount>0 else "🔴"}' for pokemon, amount in zip(pokemon_list, pokemon_amount))
         lines = (f"{num}. {pokemon}" for num, pokemon in enumerate(pokemons, 1))
         lines_list = list(lines)
-
         while True:
             #разбивает лист на равные куски по 25 покемонов, (последний кусок 26) и возвращает ганератор с нужным текстом
             for chunk_start in range(0, 150, 25):
@@ -319,7 +318,7 @@ def time_until_next_midnight():
 
 if __name__ == "__main__":
     start = time.time()
-    print(show_inventory_rarity(668210174, "Legendary"))
+    print(show_pokedex_all(668210174))
 
 
 
