@@ -4,11 +4,13 @@ from aiogram.dispatcher.filters import Text
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 import asyncio
 import random
-from info import helpinfo, rarity
+
+import info
+from info import HelpInfo, RARITY
 import functions
 
 # Загрузка токена из переменных окружения
-TOKEN = functions.poke_bot_api
+TOKEN = info.POKE_BOT_API
 bot = Bot(token=TOKEN)
 dp = Dispatcher(bot)
 
@@ -148,7 +150,7 @@ class PokemonBot:
         with open(pokemon_image, 'rb') as pokemon_photo:
             self.found_pokemon = chosen_pokemon
             sent_message = await bot.send_document(chat_id, pokemon_photo)
-            gen_info = functions.generations[chosen_pokemon]
+            gen_info = info.GENERATIONS[chosen_pokemon]
             if gen_info != '': gen_info = f' ({gen_info})'
             await bot.send_message(chat_id, f"You found a {chosen_pokemon}{gen_info}!\n\n It has '{gen}' rarity.\n\n What would you like to do?\n\nYou have {pokebol_count} pokebols", reply_markup=markup)
             self.states[chat_id] = {'state': 'choose_catch_or_skip', 'message_id': sent_message.message_id, 'gen': gen}
@@ -224,7 +226,7 @@ if __name__ == "__main__":
 
     @dp.message_handler(commands=['help'])
     async def help_command(message: types.Message):
-        await bot.send_message(message.chat.id, helpinfo, parse_mode='HTML')
+        await bot.send_message(message.chat.id, HelpInfo, parse_mode='HTML')
 
 
     @dp.message_handler(commands=['get_pokebols'])
@@ -239,7 +241,7 @@ if __name__ == "__main__":
 
     @dp.message_handler(commands=['rarity'])
     async def rarity_command(message: types.Message):
-        await bot.send_message(message.chat.id, rarity, parse_mode='HTML')
+        await bot.send_message(message.chat.id, RARITY, parse_mode='HTML')
 
 
     @dp.callback_query_handler(Text(equals="next"))
@@ -275,7 +277,7 @@ if __name__ == "__main__":
     async def show_rariry_pokedex(call: types.CallbackQuery):
         chat_id = call.message.chat.id
         markup = await pokemon_bot.inventory_markups()
-        await bot.edit_message_text(await functions.show_inventory_rarity(chat_id, call.data[:-10]), chat_id, call.message.message_id, reply_markup=markup)
+        await bot.edit_message_text(await functions.show_inventory_rarity(chat_id, call.data[:-10]), chat_id,call.message.message_id, reply_markup=markup)
 
 
     @dp.callback_query_handler(Text(equals=['go', 'keepgoing', 'skip', 'retry', 'catch']))
