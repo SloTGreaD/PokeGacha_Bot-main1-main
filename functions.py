@@ -5,17 +5,7 @@ from datetime import datetime, timedelta
 
 from info import POKEMON_LIST, RARITY_DICT, GenerationProbabilities
 
-
-def pokemon_catch():  # возвращает рандомное имя покемона в зависимости от их вероятности выпадения
-
-
-    rand_num = random.randint(1, 1000) # вероятности должны в сумме давать 1000
-    counter = 0
-    for key in GenerationProbabilities:
-        counter += int(GenerationProbabilities[key])
-        if counter >= rand_num:
-            pokemon_name = random.choice(RARITY_DICT[key])
-            return pokemon_name, key
+DATABASE_FILE = "pokedex.sql"
 
 
 class AsyncDatabaseConnection:
@@ -31,14 +21,23 @@ class AsyncDatabaseConnection:
         await self.conn.close()
 
 
+def determine_pokemon():  # возвращает рандомное имя покемона в зависимости от их вероятности выпадения
+    TOTAL_PROBABILITY = 1000
+    rand_num = random.randint(1, TOTAL_PROBABILITY)  # вероятности должны в сумме давать 1000
+    counter = 0
+    for key in GenerationProbabilities:
+        counter += int(GenerationProbabilities[key])
+        if counter >= rand_num:
+            pokemon_name = random.choice(RARITY_DICT[key])
+            return pokemon_name, key
 
 
 async def create_all_tables():
-    async with AsyncDatabaseConnection('pokedex.sql') as cur:
-        text = "CREATE TABLE IF NOT EXISTS number_of_pokemons (user_id INTEGER, last_access_date VARCHAR(12) DEFAULT '10/12/15', pokebols INTEGER DEFAULT 5, "
-        text += "".join(f'{item.lower()} INTEGER DEFAULT 0,' for item in POKEMON_LIST)
-        text = text.rstrip(',') + ")"
-        await cur.execute(text)
+    async with AsyncDatabaseConnection(DATABASE_FILE) as cur:
+        query = "CREATE TABLE IF NOT EXISTS number_of_pokemons (user_id INTEGER, last_access_date VARCHAR(12) DEFAULT '10/12/15', pokebols INTEGER DEFAULT 5, "
+        query += "".join(f'{item.lower()} INTEGER DEFAULT 0,' for item in POKEMON_LIST)
+        query = query.rstrip(',') + ")"
+        await cur.execute(query)
         await cur.execute('''
             CREATE TABLE IF NOT EXISTS captured_pokemons (
             user_id INTEGER,
@@ -57,8 +56,9 @@ async def create_all_tables():
                      common VARCHAR(30)
                     )''')
 
+
 async def add_user_to_number_of_pokemons(user_id):
-    async with AsyncDatabaseConnection('pokedex.sql') as cur:
+    async with AsyncDatabaseConnection(DATABASE_FILE) as cur:
         check_query = 'SELECT * FROM number_of_pokemons WHERE user_id = ?'
         await cur.execute(check_query, (user_id,))
         result = await cur.fetchone()
@@ -67,9 +67,8 @@ async def add_user_to_number_of_pokemons(user_id):
             await cur.execute(insert_query, (user_id,))
 
 
-
 async def capture_pokemon(user_id, found_pokemon):
-    async with AsyncDatabaseConnection('pokedex.sql') as cur:
+    async with AsyncDatabaseConnection(DATABASE_FILE) as cur:
         num = 'SELECT pokebols FROM number_of_pokemons WHERE user_id = ?'
         await cur.execute(num, (user_id,))
         pokebol_count = (await cur.fetchone())[0]
@@ -85,11 +84,23 @@ async def capture_pokemon(user_id, found_pokemon):
             success = False
     return success
 
-async def capture_pokemon_by_rarity(user_id, found_pokemon, gen): #все еще не понимаю зачем эта функция
-    async with AsyncDatabaseConnection('pokedex.sql') as cur:
+
+async def capture_failed(user_id):
+    async with AsyncDatabaseConnection(DATABASE_FILE) as cur:
+        query = 'SELECT pokebols FROM number_of_pokemons WHERE user_id = ?'
+        await cur.execute(query, (user_id,))
+        pokebol_count = await cur.fetchone()
+        pokebol_count = pokebol_count[0]
+        if pokebol_count > 0:
+            num2 = "UPDATE number_of_pokemons SET pokebols = pokebols - 1 WHERE user_id = ?"
+            await cur.execute(num2, (user_id,))
+
+
+async def capture_pokemon_by_rarity(user_id, found_pokemon, gen):  # все еще не понимаю зачем эта функция
+    async with AsyncDatabaseConnection(DATABASE_FILE) as cur:
         # Проверяем количество pokebols у пользователя
-        num = 'SELECT pokebols FROM number_of_pokemons WHERE user_id = ?'
-        await cur.execute(num, (user_id,))
+        query = 'SELECT pokebols FROM number_of_pokemons WHERE user_id = ?'
+        await cur.execute(query, (user_id,))
         pokebol_count = await cur.fetchone()
 
         if pokebol_count and pokebol_count[0] > 0:
@@ -119,21 +130,11 @@ async def capture_pokemon_by_rarity(user_id, found_pokemon, gen): #все еще
 
     return success
 
-async def capture_failed (user_id):
-    async with AsyncDatabaseConnection('pokedex.sql') as cur:
-        pok = 'SELECT pokebols FROM number_of_pokemons WHERE user_id = ?'
-        await cur.execute(pok, (user_id,))
-        pokebol_count = await cur.fetchone()
-        pokebol_count = pokebol_count[0]
-        if pokebol_count > 0:
-            num2 = "UPDATE number_of_pokemons SET pokebols = pokebols - 1 WHERE user_id = ?"
-            await cur.execute(num2, (user_id,))
 
-
-async def show_capture_time(user_id): #показывает время когда словил каждого покемона
-    async with AsyncDatabaseConnection('pokedex.sql') as cur:
-        cap1 = 'SELECT * FROM captured_pokemons WHERE user_id = ?'
-        await cur.execute(cap1, (user_id,))
+async def show_capture_time(user_id):  # показывает время когда словил каждого покемона
+    async with AsyncDatabaseConnection(DATABASE_FILE) as cur:
+        query = 'SELECT * FROM captured_pokemons WHERE user_id = ?'
+        await cur.execute(query, (user_id,))
         info = await cur.fetchall()
         pokedex = ''
         for el in info:
@@ -144,63 +145,64 @@ async def show_capture_time(user_id): #показывает время когд�
 
 
 async def show_pokedex_all(user_id):
-    async with AsyncDatabaseConnection('pokedex.sql') as cur:
-        num3 = 'SELECT * FROM number_of_pokemons WHERE user_id = ?'
-        await cur.execute(num3, (user_id,))
-        #собирает всю информацию о покемонах и конкатенирует все в лист_lines_list
+    async with AsyncDatabaseConnection(DATABASE_FILE) as cur:
+        query = 'SELECT * FROM number_of_pokemons WHERE user_id = ?'
+        await cur.execute(query, (user_id,))
+        # собирает всю информацию о покемонах и конкатенирует все в лист_lines_list
         pokemon_amount = await cur.fetchone()
         pokemon_amount = pokemon_amount[3:]
-        pokemons = (f'{pokemon} {"🟢" if amount>0 else "🔴"}' for pokemon, amount in zip(POKEMON_LIST, pokemon_amount))
-        lines = (f"{num}. {pokemon}" for num, pokemon in enumerate(pokemons, 1))
-        lines_list = list(lines)
+        pokemons = (f'{pokemon} {"🟢" if amount > 0 else "🔴"}' for pokemon, amount in
+                    zip(POKEMON_LIST, pokemon_amount))
+        lines_list = [f"{num}. {pokemon}" for num, pokemon in enumerate(pokemons, 1)]
+        MAX_POKEMONS_PER_PAGE = 25
+        
         while True:
-            #разбивает лист на равные куски по 25 покемонов, (последний кусок 26) и возвращает ганератор с нужным текстом
-            for chunk_start in range(0, 150, 25):
+            # разбивает лист на равные куски по 25 покемонов, (последний кусок 26) и возвращает ганератор с нужным текстом
+            for chunk_start in range(0, 150, MAX_POKEMONS_PER_PAGE):
                 if chunk_start == 125:
-                    yield '\n'.join(lines_list[chunk_start : chunk_start + 26])
+                    yield '\n'.join(lines_list[chunk_start: chunk_start + 26])
                 else:
-                    yield '\n'.join(lines_list[chunk_start : chunk_start + 25])
+                    yield '\n'.join(lines_list[chunk_start: chunk_start + 25])
 
 
 async def show_pokedex_rarity(user_id, requested_rarity):
-    async with AsyncDatabaseConnection('pokedex.sql') as cur:
-        num = 'SELECT * FROM number_of_pokemons WHERE user_id = ?'
-        await cur.execute(num, (user_id,))
+    async with AsyncDatabaseConnection(DATABASE_FILE) as cur:
+        query = 'SELECT * FROM number_of_pokemons WHERE user_id = ?'
+        await cur.execute(query, (user_id,))
         pokemon_amount = await cur.fetchone()
         pokemon_amount = pokemon_amount[3:]
-        pokemons_in_requested_rarity = ("\n".join(f'{pokemon} {"🟢" if amount>0 else "🔴"}' for pokemon, amount in zip(
-            POKEMON_LIST, pokemon_amount) if pokemon in RARITY_DICT[requested_rarity]))
-
+        pokemons_in_requested_rarity = (
+            "\n".join(f'{pokemon} {"🟢" if amount > 0 else "🔴"}' for pokemon, amount in zip(
+                POKEMON_LIST, pokemon_amount) if pokemon in RARITY_DICT[requested_rarity]))
 
     return pokemons_in_requested_rarity
 
-async def inventory_all(user_id):
-    async with AsyncDatabaseConnection('pokedex.sql') as cur:
-        num4 = 'SELECT * FROM number_of_pokemons WHERE user_id = ?'
-        await cur.execute(num4, (user_id,))
+
+async def show_inventory_all(user_id):
+    async with AsyncDatabaseConnection(DATABASE_FILE) as cur:
+        query = 'SELECT * FROM number_of_pokemons WHERE user_id = ?'
+        await cur.execute(query, (user_id,))
         pokemons = await cur.fetchone()
 
         start = [f'You have:\nPokebols: {pokemons[2]}']
-        pokemons_amount = (f'{pokemon_name}: {poke_count}' for poke_count, pokemon_name in zip(pokemons[3:],
-                                                                                               POKEMON_LIST) if poke_count > 0)
+        pokemons_amount = (f'{pokemon_name}: {poke_count}' for poke_count, pokemon_name in zip(pokemons[3:],POKEMON_LIST) if poke_count > 0)
         text = start + [f'{num}. {pokemon}' for num, pokemon in enumerate(pokemons_amount, 1)]
-        lenght = len(text)
-        max = 20
-        if lenght <= max:
+        length = len(text)
+        max_pokemon_per_page = 20
+        if length <= max_pokemon_per_page:
             while True:
                 yield "\n".join(text)
 
         else:
-            amount_of_tables = (lenght // max) + 1
-            pokemon_amount_in_each_table = (lenght // amount_of_tables) + 1
+            amount_of_tables = (length // max_pokemon_per_page) + 1
+            pokemon_amount_in_each_table = (length // amount_of_tables) + 1
             while True:
-                for chunk_start in range(0, lenght, pokemon_amount_in_each_table):
+                for chunk_start in range(0, length, pokemon_amount_in_each_table):
                     yield '\n'.join(text[chunk_start: chunk_start + pokemon_amount_in_each_table])
 
 
-
 async def show_inventory_rarity(user_id, requested_rarity):
-    async with AsyncDatabaseConnection('pokedex.sql') as cur:
+    async with AsyncDatabaseConnection(DATABASE_FILE) as cur:
         num4 = 'SELECT * FROM number_of_pokemons WHERE user_id = ?'
         await cur.execute(num4, (user_id,))
         pokemons = await cur.fetchone()
@@ -209,31 +211,33 @@ async def show_inventory_rarity(user_id, requested_rarity):
             return "You haven't caught any Pokémon yet."
 
         pokebols = f'Your {requested_rarity} rarity pokemons:\nPokebols: {pokemons[2]}'
-        text = '\n'.join((pokebols, "\n".join(f'{pokemon_name}: {poke_count}' for poke_count, pokemon_name in zip(pokemons[3:],
-                                                                                                                  POKEMON_LIST) if poke_count > 0 and pokemon_name in RARITY_DICT[requested_rarity])))
+        text = '\n'.join((pokebols, "\n".join(
+            f'{pokemon_name}: {poke_count}' for poke_count, pokemon_name in zip(pokemons[3:], POKEMON_LIST) if
+            poke_count > 0 and pokemon_name in RARITY_DICT[requested_rarity])))
 
     return text
 
+
 async def add_pokebols(user_id, amount):
-    async with AsyncDatabaseConnection('pokedex.sql') as cur:
+    async with AsyncDatabaseConnection(DATABASE_FILE) as cur:
         update_query = "UPDATE number_of_pokemons SET pokebols = pokebols + ? WHERE user_id = ?"
         await cur.execute(update_query, (amount, user_id))
 
+
 async def pokebols_number(user_id):
     number = 0
-    async with AsyncDatabaseConnection('pokedex.sql') as cur:
-        num5 = 'SELECT pokebols FROM number_of_pokemons WHERE user_id = ?'
-        await cur.execute(num5, (user_id,))
+    async with AsyncDatabaseConnection(DATABASE_FILE) as cur:
+        query = 'SELECT pokebols FROM number_of_pokemons WHERE user_id = ?'
+        await cur.execute(query, (user_id,))
         result = await cur.fetchone()
         if result:
             number = int(result[0])
     return number
 
 
-
-#проверяет последнюю дату запроса юзера на получение покеболов, и если это новый день, дает разрешение и перезаписывает дату
-async def check_pokebols_elegibility(user_id):
-    async with AsyncDatabaseConnection('pokedex.sql') as cursor:  # cursor уже является курсором
+# проверяет последнюю дату запроса юзера на получение покеболов, и если это новый день, дает разрешение и перезаписывает дату
+async def check_pokebols_eligibility(user_id):
+    async with AsyncDatabaseConnection(DATABASE_FILE) as cursor:  # cursor уже является курсором
         await cursor.execute('SELECT last_access_date FROM number_of_pokemons WHERE user_id = ?', (user_id,))
         date_result = await cursor.fetchone()
         if date_result:
@@ -241,12 +245,14 @@ async def check_pokebols_elegibility(user_id):
             now = datetime.now()
             current_date = now.strftime("%d/%m/%y")
             if date != current_date:
-                await cursor.execute("UPDATE number_of_pokemons SET last_access_date = ? WHERE user_id = ?", (current_date, user_id))
+                await cursor.execute("UPDATE number_of_pokemons SET last_access_date = ? WHERE user_id = ?",
+                                     (current_date, user_id))
                 return True
             else:
                 return False
         else:
             return False
+
 
 def time_until_next_midnight():
     current_time = datetime.now()
@@ -254,7 +260,7 @@ def time_until_next_midnight():
     time_remaining = next_midnight - current_time
     hours, remainder = divmod(time_remaining.seconds, 3600)
     minutes = remainder // 60
-    return f'{hours} часов, {minutes+1} минут'
+    return f'{hours} часов, {minutes + 1} минут'
 
 
 async def main():
@@ -263,15 +269,6 @@ async def main():
     a = "mivtpox_pokedex"
     print(a.rstrip("_pokedx"))
 
+
 if __name__ == "__main__":
     asyncio.run(main())
-
-
-
-
-
-
-
-
-
-
