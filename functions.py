@@ -155,7 +155,7 @@ async def show_pokedex_all(user_id):
                     zip(POKEMON_LIST, pokemon_amount))
         lines_list = [f"{num}. {pokemon}" for num, pokemon in enumerate(pokemons, 1)]
         MAX_POKEMONS_PER_PAGE = 25
-        
+
         while True:
             # разбивает лист на равные куски по 25 покемонов, (последний кусок 26) и возвращает ганератор с нужным текстом
             for chunk_start in range(0, 150, MAX_POKEMONS_PER_PAGE):
@@ -185,7 +185,8 @@ async def show_inventory_all(user_id):
         pokemons = await cur.fetchone()
 
         start = [f'You have:\nPokebols: {pokemons[2]}']
-        pokemons_amount = (f'{pokemon_name}: {poke_count}' for poke_count, pokemon_name in zip(pokemons[3:],POKEMON_LIST) if poke_count > 0)
+        pokemons_amount = (f'{pokemon_name}: {poke_count}' for poke_count, pokemon_name in
+                           zip(pokemons[3:], POKEMON_LIST) if poke_count > 0)
         text = start + [f'{num}. {pokemon}' for num, pokemon in enumerate(pokemons_amount, 1)]
         length = len(text)
         max_pokemon_per_page = 20
@@ -211,11 +212,11 @@ async def show_inventory_rarity(user_id, requested_rarity):
             return "You haven't caught any Pokémon yet."
 
         pokebols = f'Your {requested_rarity} rarity pokemons:\nPokebols: {pokemons[2]}'
-        text = '\n'.join((pokebols, "\n".join(
-            f'{pokemon_name}: {poke_count}' for poke_count, pokemon_name in zip(pokemons[3:], POKEMON_LIST) if
-            poke_count > 0 and pokemon_name in RARITY_DICT[requested_rarity])))
+        text = (f'{pokemon_name}: {poke_count}' for poke_count, pokemon_name in zip(pokemons[3:], POKEMON_LIST) if
+                poke_count > 0 and pokemon_name in RARITY_DICT[requested_rarity])
+        final_text = [pokebols] + [f'{num}. {pokemon_and_amount}' for num, pokemon_and_amount in enumerate(text, 1)]
 
-    return text
+    return "\n".join(final_text)
 
 
 async def add_pokebols(user_id, amount):
@@ -266,8 +267,7 @@ def time_until_next_midnight():
 async def main():
     # print(show_pokedex(668210174))
     # print(time_until_next_midnight())
-    a = "mivtpox_pokedex"
-    print(a.rstrip("_pokedx"))
+    print(await show_inventory_rarity(668210174, "Common"))
 
 
 if __name__ == "__main__":

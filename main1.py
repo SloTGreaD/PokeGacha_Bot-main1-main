@@ -1,17 +1,15 @@
-from aiogram import Bot, Dispatcher, types
+from aiogram import types
 from aiogram.dispatcher.filters import Text
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 import asyncio
 
 import info
 import functions
-from PokemonBot import PokemonBot
-
+from class_PokemonBot import PokemonBot
 
 # Загрузка токена из переменных окружения
-TOKEN = info.POKE_BOT_API
-bot = Bot(token=TOKEN)
-dp = Dispatcher(bot)
+from info import bot, dp
+
 
 async def main():
     try:

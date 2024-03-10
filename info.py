@@ -1,3 +1,12 @@
+from aiogram import Bot, Dispatcher
+
+MISHA_BOT_API = '5629818025:AAE3CAZFs6uhMcWZodFUdpKhSJu5awmGK_o'
+POKE_BOT_API = "6831587612:AAEUQ4m30-Pajetdnw0AwZ4omaNmzVkc-4o"
+
+TOKEN = POKE_BOT_API
+bot = Bot(token=TOKEN)
+dp = Dispatcher(bot)
+
 HelpInfo = """
 <b>Помощь по использованию бота:</b>
 
@@ -19,8 +28,6 @@ HelpInfo = """
 <b>retry</b> - Повторить попытку
 - Удачи в поисках покемонов!
 """
-MISHA_BOT_API = '5629818025:AAE3CAZFs6uhMcWZodFUdpKhSJu5awmGK_o'
-POKE_BOT_API = "6831587612:AAEUQ4m30-Pajetdnw0AwZ4omaNmzVkc-4o"
 
 RARITY = 'Common: 60%\nUncommon: 23%\nRare: 12%\nSuperRare: 3%\nEpic: 1.9%\nLegendary: 0.1%'
 
@@ -42,3 +49,4 @@ GenerationProbabilities = {"Common": '600',
                             "SuperRare":'30',
                             "Epic":'19',  # вероятности должны быть написаны целыми числами
                             "Legendary":'1'}
+

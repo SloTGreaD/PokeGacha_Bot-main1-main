@@ -4,7 +4,7 @@ from aiogram import types
 
 import functions
 import info
-from main1 import bot, dp
+from info import bot, dp
 
 
 class PokemonBot:
