@@ -1,10 +1,10 @@
 import random
 
 from aiogram import types
-
 import functions
 import info
 from info import bot, dp
+from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 
 class PokemonBot:
@@ -13,6 +13,8 @@ class PokemonBot:
         self.states = {}
         self.generator = None
         self.found_pokemon = ""
+        self.rarity_pokemon_count = 1
+        self.max_num_in_rarity = 0
 
     async def async_init(self):
         await functions.create_all_tables()
@@ -21,30 +23,6 @@ class PokemonBot:
         await functions.add_user_to_number_of_pokemons(message.chat.id)
         await bot.send_message(message.chat.id,
                                f"Hi, {message.from_user.first_name}!\nWelcome to Poké-Hunter. This bot allows you to search and catch Pokémons.\nPress /go to start your adventure.\nPress /help for more information.")
-
-    async def pokedex_markups(self):
-        markup = types.InlineKeyboardMarkup()
-        all_var = types.InlineKeyboardButton("All", callback_data="All_pokedex")
-        common = types.InlineKeyboardButton("Common", callback_data="Common_pokedex")
-        uncommon = types.InlineKeyboardButton("Uncommon", callback_data="Uncommon_pokedex")
-        rare = types.InlineKeyboardButton("Rare", callback_data="Rare_pokedex")
-        superrare = types.InlineKeyboardButton("SuperRare", callback_data="SuperRare_pokedex")
-        epic = types.InlineKeyboardButton("Epic", callback_data="Epic_pokedex")
-        legendary = types.InlineKeyboardButton("Legendary", callback_data="Legendary_pokedex")
-        markup.add(common, uncommon, rare, superrare, epic, legendary, all_var)
-        return markup
-
-    async def inventory_markups(self):
-        markup = types.InlineKeyboardMarkup()
-        all_var = types.InlineKeyboardButton("All", callback_data="All_inventory")
-        common = types.InlineKeyboardButton("Common", callback_data="Common_inventory")
-        uncommon = types.InlineKeyboardButton("Uncommon", callback_data="Uncommon_inventory")
-        rare = types.InlineKeyboardButton("Rare", callback_data="Rare_inventory")
-        superrare = types.InlineKeyboardButton("SuperRare", callback_data="SuperRare_inventory")
-        epic = types.InlineKeyboardButton("Epic", callback_data="Epic_inventory")
-        legendary = types.InlineKeyboardButton("Legendary", callback_data="Legendary_inventory")
-        markup.add(common, uncommon, rare, superrare, epic, legendary, all_var)
-        return markup
 
     async def handle_go_callback(self, call):
         chat_id = call.message.chat.id  # Для простоты предполагаем, что user_id и chat_id идентичны
@@ -104,11 +82,11 @@ class PokemonBot:
         # bot.delete_message(chat_id, message_id)
 
     async def show_pokedex_variations(self, chat_id, text):
-        markup = await self.pokedex_markups()
+        markup = await self.command_markups('pokedex')
         await bot.send_message(chat_id, text, reply_markup=markup)
 
     async def show_inventory_variations(self, chat_id):
-        markup = await self.inventory_markups()
+        markup = await self.command_markups('inventory')
         await bot.send_message(chat_id, "Inventory", reply_markup=markup)
 
     async def show_all_pokedex(self, chat_id, message_id):
@@ -128,6 +106,15 @@ class PokemonBot:
         # Используйте pokedex_page для отправки текущего содержимого страницы
         text = await self.generator.__anext__()
         await bot.edit_message_text(text, chat_id, message_id, reply_markup=markup)
+
+    async def show_pictures_rarity(self, user_id: int, rarity: str):
+        list_pictures_rarity = await functions.list_pictures_rarity(user_id, rarity)
+        self.max_num_in_rarity = len(list_pictures_rarity)
+        while True:
+            counter = self.rarity_pokemon_count - 1
+            pokemon_and_count = list_pictures_rarity[counter]
+            yield pokemon_and_count[0], pokemon_and_count[1]
+            # pokemon name          #pokemons number in user inventory
 
     async def show_catch_or_skip_buttons(self, chat_id, pokebol_count):
         # Отображение кнопок "Try to Catch" и "Skip" после успешной попытки
@@ -162,6 +149,34 @@ class PokemonBot:
 
         # bot.delete_message(chat_id, message_id)
 
+    async def increase_and_show_pokemon_picture(self, chat_id, message_id, num, rarity=""):
+        if num == 0:
+            self.generator = self.show_pictures_rarity(chat_id, rarity)
+
+        elif self.rarity_pokemon_count >= self.max_num_in_rarity:
+            self.rarity_pokemon_count = 0
+
+        self.rarity_pokemon_count += num
+        pokemon, pokemon_amount = await self.generator.__anext__()
+        markup = InlineKeyboardMarkup()
+        back = InlineKeyboardButton("<<", callback_data="back")
+        number = InlineKeyboardButton(f'{self.rarity_pokemon_count}/{self.max_num_in_rarity}', callback_data="www")
+        forward = InlineKeyboardButton(">>", callback_data="forward")
+        markup.add(back, number, forward)
+        await bot.edit_message_text(f'{pokemon} you have {pokemon_amount}', chat_id, message_id, reply_markup=markup)
+
+    async def decrease_and_show_pokemon_picture(self, chat_id, message_id, num):
+        if self.rarity_pokemon_count <= 1:
+            self.rarity_pokemon_count = self.max_num_in_rarity + 1
+        self.rarity_pokemon_count -= num
+        pokemon, pokemon_amount = await self.generator.__anext__()
+        markup = InlineKeyboardMarkup()
+        back = InlineKeyboardButton("<<", callback_data="back")
+        number = InlineKeyboardButton(f'{self.rarity_pokemon_count}/{self.max_num_in_rarity}', callback_data="www")
+        forward = InlineKeyboardButton(">>", callback_data="forward")
+        markup.add(back, number, forward)
+        await bot.edit_message_text(f'{pokemon} you have {pokemon_amount}', chat_id, message_id, reply_markup=markup)
+
     async def show_captured_or_not_buttons(self, chat_id, message_id):
         # Отображение кнопки "Try again" после неудачной попытки захвата
         markup = types.InlineKeyboardMarkup()
@@ -181,7 +196,17 @@ class PokemonBot:
         else:
             await bot.send_message(user_id,
                                    f'К сожалению вы еще не можете получить бесплатные покеболы. Дождитесь следующего дня. Осталось ждать: {text}')
-
+    async def command_markups(self, command):
+        markup = types.InlineKeyboardMarkup()
+        all_var = types.InlineKeyboardButton("All", callback_data=f"All_{command}")
+        common = types.InlineKeyboardButton("Common", callback_data=f"Common_{command}")
+        uncommon = types.InlineKeyboardButton("Uncommon", callback_data=f"Uncommon_{command}")
+        rare = types.InlineKeyboardButton("Rare", callback_data=f"Rare_{command}")
+        superrare = types.InlineKeyboardButton("SuperRare", callback_data=f"SuperRare_{command}")
+        epic = types.InlineKeyboardButton("Epic", callback_data=f"Epic_{command}")
+        legendary = types.InlineKeyboardButton("Legendary", callback_data=f"Legendary_{command}")
+        markup.add(common, uncommon, rare, superrare, epic, legendary, all_var)
+        return markup
     def run(self):
         # Запуск бота в режиме бесконечного опроса
         dp.infinity_polling()

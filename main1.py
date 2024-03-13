@@ -64,6 +64,12 @@ if __name__ == "__main__":
         await bot.send_message(message.chat.id, info.RARITY, parse_mode='HTML')
 
 
+    @dp.message_handler(commands=['pictures'])
+    async def see_in_pictures(message: types.Message):
+        markups = await pokemon_bot.command_markups('pictures')
+        await bot.send_message(message.chat.id, "Choose the rarity you want to see", reply_markup=markups)
+
+
     @dp.callback_query_handler(Text(equals="next"))
     async def scroll_to_next(call: types.CallbackQuery):
         markup = InlineKeyboardMarkup()
@@ -73,7 +79,8 @@ if __name__ == "__main__":
             text = await pokemon_bot.generator.__anext__()
             await bot.edit_message_text(text, call.message.chat.id, call.message.message_id, reply_markup=markup)
         except StopIteration:
-            await bot.edit_message_text('This Pokédex is not valid anymore, press /pokedex to get up-to-date version', call.message.chat.id, call.message.message_id)
+            await bot.edit_message_text('This Pokédex is not valid anymore, press /pokedex to get up-to-date version',
+                                        call.message.chat.id, call.message.message_id)
 
 
     @dp.callback_query_handler(Text(equals="All_pokedex"))
@@ -87,17 +94,36 @@ if __name__ == "__main__":
 
 
     @dp.callback_query_handler(Text(endswith='_pokedex'))
-    async def show_rariry_pokedex(call: types.CallbackQuery):
+    async def show_rariry_pokedex(call):
         chat_id = call.message.chat.id
-        markup = await pokemon_bot.pokedex_markups()
-        await bot.edit_message_text(await functions.show_pokedex_rarity(chat_id, call.data[:-8]), chat_id, call.message.message_id, reply_markup=markup)
+        markup = await pokemon_bot.command_markups('pokedex')
+        await bot.edit_message_text(await functions.show_pokedex_rarity(chat_id, call.data[:-8]), chat_id,
+                                    call.message.message_id, reply_markup=markup)
 
 
     @dp.callback_query_handler(Text(endswith='_inventory'))
-    async def show_rariry_pokedex(call: types.CallbackQuery):
+    async def show_rarity_inventory(call: types.CallbackQuery):
         chat_id = call.message.chat.id
-        markup = await pokemon_bot.inventory_markups()
-        await bot.edit_message_text(await functions.show_inventory_rarity(chat_id, call.data[:-10]), chat_id,call.message.message_id, reply_markup=markup)
+        markup = await pokemon_bot.command_markups('inventory')
+        await bot.edit_message_text(await functions.show_inventory_rarity(chat_id, call.data[:-10]), chat_id,
+                                    call.message.message_id, reply_markup=markup)
+
+
+    @dp.callback_query_handler(Text(endswith='_pictures'))
+    async def show_rarity_pictures(call):
+        await pokemon_bot.increase_and_show_pokemon_picture(call.message.chat.id, call.message.message_id, 0,
+                                                            call.data[:-9])
+
+
+    @dp.callback_query_handler(Text(equals='forward'))
+    async def change_pokemon_picture(call):
+        await pokemon_bot.increase_and_show_pokemon_picture(call.message.chat.id, call.message.message_id, 1)
+
+
+    @dp.callback_query_handler(Text(equals='back'))
+    async def change_pokemon_picture(call):
+        chat_id = call.message.chat.id
+        await pokemon_bot.decrease_and_show_pokemon_picture(chat_id, call.message.message_id, 1)
 
 
     @dp.callback_query_handler(Text(equals=['go', 'keepgoing', 'skip', 'retry', 'catch']))
