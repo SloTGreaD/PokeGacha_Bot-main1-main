@@ -46,15 +46,8 @@ async def create_all_tables():
             )
             ''')
         await cur.execute('CREATE TABLE IF NOT EXISTS users (name varchar(50))')
-        await cur.execute('''CREATE TABLE IF NOT EXISTS dif_rarity 
-                    (user_id INTEGER,
-                     legendary VARCHAR(30),
-                     epic VARCHAR(30),
-                     superrare VARCHAR(30),
-                     rare VARCHAR(30),
-                     uncommon VARCHAR(30),
-                     common VARCHAR(30)
-                    )''')
+        items = 'CREATE TABLE IF NOT EXISTS items (user_id INTEGER, last_adventure_date VARCHAR(12) DEFAULT "10/12/15", last_rest_date VARCHAR(12) DEFAULT "10/12/15", energy INTEGER DEFAULT 5, bread INTEGER DEFAULT 5)'
+        await cur.execute(items)
 
 
 async def add_user_to_number_of_pokemons(user_id):
@@ -66,6 +59,16 @@ async def add_user_to_number_of_pokemons(user_id):
             insert_query = "INSERT INTO number_of_pokemons (user_id) VALUES (?)"
             await cur.execute(insert_query, (user_id,))
 
+async def add_user_and_initialize_energy(user_id):
+    async with AsyncDatabaseConnection(DATABASE_FILE) as cur:
+        
+        # Проверка и инициализация начального значения energy в таблице items
+        check_query_items = 'SELECT * FROM items WHERE user_id = ?'
+        await cur.execute(check_query_items, (user_id,))
+        if await cur.fetchone() is None:
+            # Установите начальное значение energy, например, 100
+            insert_query_items = "INSERT INTO items (user_id, energy) VALUES (?, ?)"
+            await cur.execute(insert_query_items, (user_id, 100))  # 100 - это пример начального значения energy
 
 async def capture_pokemon(user_id, found_pokemon):
     async with AsyncDatabaseConnection(DATABASE_FILE) as cur:
@@ -235,6 +238,52 @@ async def pokebols_number(user_id):
             number = int(result[0])
     return number
 
+async def add_energy(user_id, amount1):
+    async with AsyncDatabaseConnection(DATABASE_FILE) as cur:
+        update_query1 = "UPDATE items SET energy = energy + ? WHERE user_id = ?"
+        await cur.execute(update_query1, (amount1, user_id))
+
+async def energy_number(user_id):
+    count = 0
+    async with AsyncDatabaseConnection(DATABASE_FILE) as cur:
+        query1 = 'SELECT energy FROM items WHERE user_id = ?'
+        await cur.execute(query1, (user_id,))
+        result = await cur.fetchone()
+        if result:
+            count = int(result[0])
+    return count
+
+
+         
+async def use_energy(user_id):
+    async with AsyncDatabaseConnection(DATABASE_FILE) as cur:
+        update_query = 'UPDATE items SET energy = energy - 1 WHERE user_id = ? AND energy > 0'
+        await cur.execute(update_query, (user_id,))
+        
+async def use_bread(user_id):
+    async with AsyncDatabaseConnection(DATABASE_FILE) as cur:
+        update_query1 = 'UPDATE items SET energy = energy + 10 WHERE user_id = ?'
+        update_query2 = 'UPDATE items SET bread = bread - 1 WHERE user_id = ? AND bread > 0'
+        await cur.execute(update_query1, (user_id,))
+        await cur.execute(update_query2, (user_id,))
+
+
+async def check_last_adventure(user_id):
+    async with AsyncDatabaseConnection(DATABASE_FILE) as cursor:
+        await cursor.execute('SELECT last_adventure_date FROM items WHERE user_id = ?', (user_id,))
+        date_result2 = await cursor.fetchone()
+        if date_result2:
+            date = date_result2[0]
+            now = datetime.now()
+            current_date2 = now.strftime("%d/%m/%y")
+            if date != current_date2:
+                await cursor.execute("UPDATE items SET last_adventure_date = ? WHERE user_id = ?",
+                                     (current_date2, user_id))
+                return True
+            else:
+                return False
+        else:
+            return False
 
 # проверяет последнюю дату запроса юзера на получение покеболов, и если это новый день, дает разрешение и перезаписывает дату
 async def check_pokebols_eligibility(user_id):
@@ -253,7 +302,34 @@ async def check_pokebols_eligibility(user_id):
                 return False
         else:
             return False
+        
+async def check_energy_eligibility(user_id):
+    async with AsyncDatabaseConnection(DATABASE_FILE) as cursor:
+        await cursor.execute('SELECT last_rest_date FROM items WHERE user_id = ?', (user_id,))
+        date_result1 = await cursor.fetchone()
+        if date_result1:
+            date = date_result1[0]
+            now = datetime.now()
+            current_date1 = now.strftime("%d/%m/%y")
+            if date != current_date1:
+                await cursor.execute("UPDATE items SET last_rest_date = ? WHERE user_id = ?",
+                                     (current_date1, user_id))
+                return True
+            else:
+                return False
+        else:
+            return False
+        
 
+async def check_bread_availability(user_id):  # проверяет наличие хлеба
+    async with AsyncDatabaseConnection(DATABASE_FILE) as cursor:
+        await cursor.execute("SELECT bread FROM items WHERE user_id = ?", (user_id,))
+        result = await cursor.fetchone()
+        if result and result[0] > 0:
+            return True
+        else:
+            return False
+        
 
 def time_until_next_midnight():
     current_time = datetime.now()
