@@ -1,7 +1,6 @@
 import random
-
+from datetime import datetime, timedelta
 from aiogram import types
-
 import functions
 import info
 from info import bot, dp
@@ -13,12 +12,14 @@ class PokemonBot:
         self.states = {}
         self.generator = None
         self.found_pokemon = ""
+        self.last_skip_time = {}  # Изменили на словарь для отслеживания времени по chat_id
 
     async def async_init(self):
         await functions.create_all_tables()
 
     async def start(self, message):
         await functions.add_user_to_number_of_pokemons(message.chat.id)
+        await functions.add_user_and_initialize_energy(message.chat.id)
         await bot.send_message(message.chat.id,
                                f"Hi, {message.from_user.first_name}!\nWelcome to Poké-Hunter. This bot allows you to search and catch Pokémons.\nPress /go to start your adventure.\nPress /help for more information.")
 
@@ -51,8 +52,18 @@ class PokemonBot:
 
         # Используйте `await` для асинхронного получения количества pokebols
         pokebol_count = await functions.pokebols_number(chat_id)
+        if call.data == 'skip':
+            now = datetime.now()
+            if chat_id in self.last_skip_time and now - self.last_skip_time[chat_id] < timedelta(seconds=1):  # Ограничиваем 1 нажатие в 2 секунды
+                
+                await self.slow_down(chat_id, call.message.message_id)
+                return
+            self.last_skip_time[chat_id] = now
 
-        if pokebol_count > 0:
+        pokebol_count = await functions.pokebols_number(chat_id)
+        energy = await functions.energy_number(chat_id)
+
+        if pokebol_count > 0 and energy >0:
             # Обработка нажатия кнопок "Go", "Keep going", "Skip"
             if call.data in ['go', 'keepgoing', 'skip']:
                 self.found_pokemon = ""
@@ -62,12 +73,16 @@ class PokemonBot:
                     if call.data == 'skip':
                         await bot.delete_message(call.message.chat.id, call.message.message_id - 1)
                 except Exception as e:
-                    print(f"Ошибка при удалении сообщения: {e}")
+                    if "message to delete not found" not in str(e).lower():
+                        print(f"Ошибка при удалении сообщения: {e}")
 
                 if random.choice([True, False]):
-                    await self.show_catch_or_skip_buttons(chat_id, pokebol_count)
+                    await self.show_catch_or_skip_buttons(chat_id, pokebol_count, energy)
+                    await functions.use_energy(chat_id)
+                    
                 else:
                     await self.back_to_start(chat_id, call.message.message_id)
+                    await functions.use_energy(chat_id)
 
             # Обработка нажатия кнопок "Catch", "Retry"
             elif call.data in ['catch', 'retry']:
@@ -83,10 +98,14 @@ class PokemonBot:
                     await self.show_captured_or_not_buttons(chat_id, call.message.message_id)
 
 
-        else:
+        elif pokebol_count<0:
             await bot.send_message(chat_id,
                                    "У вас нет pokebol! Найдите или купите их, чтобы продолжить ловлю покемонов.")
             # на будущее: нужно придумать какое то продолжение для пользователя после этого сообщения
+        else:
+            await self.gain_energy_at_start(chat_id)
+            await self.show_catch_or_skip_buttons(chat_id, pokebol_count, energy)
+    
 
     async def show_go_buttons(self, chat_id):
         # Отправка кнопки "Go" для начала поиска покемона
@@ -102,6 +121,16 @@ class PokemonBot:
         markup.add(button_back)
         await bot.send_message(chat_id, 'You did not find anything', reply_markup=markup)
         # bot.delete_message(chat_id, message_id)
+    
+    async def slow_down(self, chat_id, message_id):
+        markup = types.InlineKeyboardMarkup()
+        button_back = types.InlineKeyboardButton('Keep going', callback_data='keepgoing')
+        markup.add(button_back)
+        await bot.delete_message(chat_id, message_id)
+        
+        await bot.delete_message(chat_id, message_id - 1)
+        await bot.send_message(chat_id, "Please slow down", reply_markup=markup)
+
 
     async def show_pokedex_variations(self, chat_id, text):
         markup = await self.pokedex_markups()
@@ -129,7 +158,7 @@ class PokemonBot:
         text = await self.generator.__anext__()
         await bot.edit_message_text(text, chat_id, message_id, reply_markup=markup)
 
-    async def show_catch_or_skip_buttons(self, chat_id, pokebol_count):
+    async def show_catch_or_skip_buttons(self, chat_id, pokebol_count, energy):
         # Отображение кнопок "Try to Catch" и "Skip" после успешной попытки
         markup = types.InlineKeyboardMarkup()
         button_catch = types.InlineKeyboardButton('Try to Catch', callback_data='catch')
@@ -145,7 +174,7 @@ class PokemonBot:
             gen_info = info.GENERATIONS[chosen_pokemon]
             if gen_info != '': gen_info = f' ({gen_info})'
             await bot.send_message(chat_id,
-                                   f"You found a {chosen_pokemon}{gen_info}!\n\n It has '{gen}' rarity.\n\n What would you like to do?\n\nYou have {pokebol_count} pokebols",
+                                   f"You found a {chosen_pokemon}{gen_info}!\n\n It has '{gen}' rarity.\n\n What would you like to do?\n\nYou have {pokebol_count} pokebols\n\n your energy level is {energy}",
                                    reply_markup=markup)
             self.states[chat_id] = {'state': 'choose_catch_or_skip', 'message_id': sent_message.message_id, 'gen': gen}
 
@@ -171,6 +200,22 @@ class PokemonBot:
         await bot.send_message(chat_id, 'Bad luck', reply_markup=markup)
         # bot.delete_message(chat_id, message_id)
 
+
+    async def item_handler(self, call): # использует хлеб
+        chat_id = call.message.chat.id
+        if call.data == 'check_bread':
+            await functions.use_bread(chat_id)
+
+
+
+    async def items_buttons(self, chat_id):
+        markup = types.InlineKeyboardMarkup()
+        button_bread = types.InlineKeyboardButton('🍞Bread', callback_data='check_bread')
+        markup.add(button_bread)
+        await bot.send_message(chat_id, 'Item bag', reply_markup=markup)
+
+
+
     async def get_pokebols(self, user_id):
         can_get_pokebols = await functions.check_pokebols_eligibility(user_id)  # возвращает True or False
         text = functions.time_until_next_midnight()
@@ -181,6 +226,29 @@ class PokemonBot:
         else:
             await bot.send_message(user_id,
                                    f'К сожалению вы еще не можете получить бесплатные покеболы. Дождитесь следующего дня. Осталось ждать: {text}')
+    
+    async def gain_energy(self, user_id):
+        can_gain_energy = await functions.check_energy_eligibility(user_id)
+        text1 = functions.time_until_next_midnight()
+        if can_gain_energy:
+            await functions.add_energy(user_id, 20)
+            await bot.send_message(user_id, f'Вы отдохнули, и востоновили 20 энергии. До сдедующего отдыза осталось {text1}')
+        else:
+            await bot.send_message(user_id,
+                                   f'К сожалению вы еще не можете отдохнуть. Дождитесь следующего дня. Осталось ждать: {text1}')
+
+    async def gain_energy_at_start(self, user_id):
+        can_gain_energy1 = await functions.check_last_adventure(user_id)
+        text2 = functions.time_until_next_midnight()
+        if can_gain_energy1:
+            await functions.add_energy(user_id, 30)
+            await bot.send_message(user_id, f'Вы отдохнули, и востоновили 30 энергии. До сдедующего отдыха осталось {text2}')
+            
+        else:
+            await bot.send_message(user_id,
+                                   f'К сожалению сегодня вы израсходовали всю энергию. Вы можете отдохнуть, восполнить энергию едой, либо дождатся следующего дня. Осталось ждать: {text2}')
+        
+    
 
     def run(self):
         # Запуск бота в режиме бесконечного опроса

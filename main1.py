@@ -29,7 +29,9 @@ if __name__ == "__main__":
     # Обработчики сообщений и колбеков
     @dp.message_handler(commands=['start'])
     async def start_wrapper(message: types.Message):
+        
         await pokemon_bot.start(message)
+        
 
 
     @dp.message_handler(commands=['pokedex'])
@@ -42,6 +44,7 @@ if __name__ == "__main__":
     async def show_go_message(message: types.Message):
         chat_id = message.chat.id
         await pokemon_bot.show_go_buttons(chat_id)
+        
 
 
     @dp.message_handler(commands=['help'])
@@ -53,11 +56,17 @@ if __name__ == "__main__":
     async def get_pokebols_handler(message: types.Message):
         await pokemon_bot.get_pokebols(message.chat.id)
 
+    @dp.message_handler(commands=['have_a_rest'])
+    async def get_energy_handler(message: types.Message):
+        await pokemon_bot.gain_energy(message.chat.id)
 
-    @dp.message_handler(commands=['inventory'])
+    @dp.message_handler(commands=['my_pokemons'])
     async def inventory_handler(message: types.Message):
         await pokemon_bot.show_inventory_variations(message.chat.id)
 
+    @dp.message_handler(commands=['items'])
+    async def items_handler(message: types.Message):
+        await pokemon_bot.items_buttons(message.chat.id)
 
     @dp.message_handler(commands=['rarity'])
     async def rarity_command(message: types.Message):
@@ -105,6 +114,16 @@ if __name__ == "__main__":
         markup = types.InlineKeyboardMarkup()
         await bot.edit_message_reply_markup(call.message.chat.id, call.message.message_id, reply_markup=markup)
         await pokemon_bot.handle_go_callback(call)
+        
+    @dp.callback_query_handler(Text(equals='check_bread'))  # обрабатывает колбэк 
+    async def handle_check_bread(call: types.CallbackQuery):
+        user_id = call.from_user.id
+        has_bread = await functions.check_bread_availability(user_id) # проверяет наличие хлеба
+        if has_bread:
+            await pokemon_bot.item_handler(call)  # использует хлеб
+            await call.answer("Вы съели хлеб и восстановили 10 энергии!", show_alert=True) 
+        else:
+            await call.answer("У вас нет предмета bread!", show_alert=True)
 
 
     # Запуск бота
