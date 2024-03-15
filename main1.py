@@ -30,9 +30,8 @@ if __name__ == "__main__":
     # Обработчики сообщений и колбеков
     @dp.message_handler(commands=['start'])
     async def start_wrapper(message: types.Message):
-        
+
         await pokemon_bot.start(message)
-        
 
 
     @dp.message_handler(commands=['pokedex'])
@@ -45,7 +44,6 @@ if __name__ == "__main__":
     async def show_go_message(message: types.Message):
         chat_id = message.chat.id
         await pokemon_bot.show_go_buttons(chat_id)
-        
 
 
     @dp.message_handler(commands=['help'])
@@ -57,17 +55,21 @@ if __name__ == "__main__":
     async def get_pokebols_handler(message: types.Message):
         await pokemon_bot.get_pokebols(message.chat.id)
 
+
     @dp.message_handler(commands=['have_a_rest'])
     async def get_energy_handler(message: types.Message):
         await pokemon_bot.gain_energy(message.chat.id)
 
+
     @dp.message_handler(commands=['my_pokemons'])
-    async def inventory_handler(message: types.Message):
-        await pokemon_bot.show_inventory_variations(message.chat.id)
+    async def my_pokemons_handler(message: types.Message):
+        await pokemon_bot.show_my_pokemons_variations(message.chat.id)
+
 
     @dp.message_handler(commands=['items'])
     async def items_handler(message: types.Message):
         await pokemon_bot.items_buttons(message.chat.id)
+
 
     @dp.message_handler(commands=['rarity'])
     async def rarity_command(message: types.Message):
@@ -89,7 +91,7 @@ if __name__ == "__main__":
             text = await pokemon_bot.generator.__anext__()
             await bot.edit_message_text(text, call.message.chat.id, call.message.message_id, reply_markup=markup)
         except StopIteration:
-            await bot.edit_message_text('This Pokédex is not valid anymore, press /pokedex to get up-to-date version',
+            await bot.edit_message_text('This Item is not valid anymore, press /pokedex to get up-to-date version',
                                         call.message.chat.id, call.message.message_id)
 
 
@@ -98,9 +100,9 @@ if __name__ == "__main__":
         await pokemon_bot.show_all_pokedex(call.message.chat.id, call.message.message_id)
 
 
-    @dp.callback_query_handler(Text(equals="All_inventory"))
-    async def show_all_inventory(call: types.CallbackQuery):
-        await pokemon_bot.inventory_all(call.message.chat.id, call.message.message_id)
+    @dp.callback_query_handler(Text(equals="All_pokemons"))
+    async def show_all_my_pokemons(call: types.CallbackQuery):
+        await pokemon_bot.my_pokemons_all(call.message.chat.id, call.message.message_id)
 
 
     @dp.callback_query_handler(Text(endswith='_pokedex'))
@@ -111,11 +113,11 @@ if __name__ == "__main__":
                                     call.message.message_id, reply_markup=markup)
 
 
-    @dp.callback_query_handler(Text(endswith='_inventory'))
-    async def show_rarity_inventory(call: types.CallbackQuery):
+    @dp.callback_query_handler(Text(endswith='_pokemons'))
+    async def show_rarity_pokemons(call: types.CallbackQuery):
         chat_id = call.message.chat.id
-        markup = await pokemon_bot.command_markups('inventory')
-        await bot.edit_message_text(await functions.show_inventory_rarity(chat_id, call.data[:-10]), chat_id,
+        markup = await pokemon_bot.command_markups('pokemons')
+        await bot.edit_message_text(await functions.show_pokemons_rarity(chat_id, call.data[:-9]), chat_id,
                                     call.message.message_id, reply_markup=markup)
 
 
@@ -141,12 +143,12 @@ if __name__ == "__main__":
         markup = types.InlineKeyboardMarkup()
         await bot.edit_message_reply_markup(call.message.chat.id, call.message.message_id, reply_markup=markup)
         await pokemon_bot.handle_go_callback(call)
-        
-    @dp.callback_query_handler(Text(equals=['check_bread', 'check_rice', 'check_ramen', 'check_spaghetti']))  # обрабатывает колбэк 
+
+
+    @dp.callback_query_handler(
+        Text(equals=['check_bread', 'check_rice', 'check_ramen', 'check_spaghetti']))  # обрабатывает колбэк
     async def handle_check_bread(call: types.CallbackQuery):
         await pokemon_bot.item_handler(call)  # использует хлеб
-        
-        
 
 
     # Запуск бота

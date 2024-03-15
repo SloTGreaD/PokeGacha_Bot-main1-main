@@ -15,9 +15,10 @@ HelpInfo = """
 /help - Вывести это сообщение справки
 /pokedex - Показать Покемонов
 /get_pokebols - получить 5 бесплатных покемонов за ежедневный вход 
-/inventory - посмотреть всех своих покемонов
+/my_pokemons - посмотреть всех своих покемонов
 /rarity - все редкости и шанс выпадения
 /pictures - показать покемонов в виде картинки 
+/have_a_rest - отдохнуть
 <b>Дополнительные команды:</b>
 
 /help - Вывести это сообщение справки
@@ -51,6 +52,7 @@ GenerationProbabilities = {"Common": '600',
                             "SuperRare": '30',
                             "Epic": '19',  # вероятности должны быть написаны целыми числами
                             "Legendary":'1'}
+
 POKEMON_BY_TYPE = {
     'Normal⭕': ['Pidgey', 'Pidgeotto', 'Pidgeot', 'Rattata', 'Raticate', 'Spearow', 'Fearow', 'Jigglypuff', 'Wigglytuff', 'Meowth', 'Persian', 'Doduo', 'Dodrio', 'Lickitung', 'Chansey', 'Kangaskhan', 'Tauros', 'Ditto', 'Eevee', 'Porygon', 'Snorlax'],
     'Fire🔥': ['Charmander', 'Charmeleon', 'Charizard', 'Vulpix', 'Ninetales', 'Growlithe', 'Arcanine', 'Ponyta', 'Rapidash', 'Magmar', 'Flareon'],
@@ -72,4 +74,12 @@ POKEMON_BY_TYPE = {
     'Fairy🧚': ['Clefairy', 'Clefable', 'Jigglypuff', 'Wigglytuff', 'Mr. Mime']
 }
 
+POKEMON_CATCH_SUCCESS_RATES = {
+    'Common': 70,
+    'Uncommon': 50,
+    'Rare': 30,
+    'SuperRare': 20,
+    'Epic': 10,
+    'Legendary': 5
+}
 

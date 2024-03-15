@@ -181,7 +181,7 @@ async def show_pokedex_rarity(user_id, requested_rarity):
     return pokemons_in_requested_rarity
 
 
-async def show_inventory_all(user_id):
+async def show_my_pokemons_all(user_id):
     async with AsyncDatabaseConnection(DATABASE_FILE) as cur:
         query = 'SELECT * FROM number_of_pokemons WHERE user_id = ?'
         await cur.execute(query, (user_id,))
@@ -221,7 +221,7 @@ async def list_pictures_rarity(user_id, requested_rarity):
         return list_of_rarity_pokemons
 
 
-async def show_inventory_rarity(user_id, requested_rarity):
+async def show_pokemons_rarity(user_id, requested_rarity):
     async with AsyncDatabaseConnection(DATABASE_FILE) as cur:
         num4 = 'SELECT * FROM number_of_pokemons WHERE user_id = ?'
         await cur.execute(num4, (user_id,))
@@ -275,10 +275,6 @@ async def check_pokebols_eligibility(user_id):
             return False
         
 
-        
-
-
-
 
 def time_until_next_midnight():
     current_time = datetime.now()
@@ -292,8 +288,9 @@ def time_until_next_midnight():
 async def main():
     # print(show_pokedex(668210174))
     # print(time_until_next_midnight())
-    print(await show_inventory_rarity(668210174, "Common"))
-
+    # await add_pokebols(668210174, 10)
+    print(await pokebols_number(668210174))
 
 if __name__ == "__main__":
     asyncio.run(main())
+
