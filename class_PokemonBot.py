@@ -15,6 +15,7 @@ class PokemonBot:
         self.found_pokemon = ""
         self.rarity_pokemon_count = 1
         self.max_num_in_rarity = 0
+        self.last_skip_time = {}  # Изменили на словарь для отслеживания времени по chat_id
 
     async def async_init(self):
         await functions.create_all_tables()
