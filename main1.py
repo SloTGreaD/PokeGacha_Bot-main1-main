@@ -5,6 +5,7 @@ import asyncio
 
 import info
 import functions
+import energy
 from class_PokemonBot import PokemonBot
 
 # Загрузка токена из переменных окружения
@@ -115,15 +116,11 @@ if __name__ == "__main__":
         await bot.edit_message_reply_markup(call.message.chat.id, call.message.message_id, reply_markup=markup)
         await pokemon_bot.handle_go_callback(call)
         
-    @dp.callback_query_handler(Text(equals='check_bread'))  # обрабатывает колбэк 
+    @dp.callback_query_handler(Text(equals=['check_bread', 'check_rice', 'check_ramen', 'check_spaghetti']))  # обрабатывает колбэк 
     async def handle_check_bread(call: types.CallbackQuery):
-        user_id = call.from_user.id
-        has_bread = await functions.check_bread_availability(user_id) # проверяет наличие хлеба
-        if has_bread:
-            await pokemon_bot.item_handler(call)  # использует хлеб
-            await call.answer("Вы съели хлеб и восстановили 10 энергии!", show_alert=True) 
-        else:
-            await call.answer("У вас нет предмета bread!", show_alert=True)
+        await pokemon_bot.item_handler(call)  # использует хлеб
+        
+        
 
 
     # Запуск бота
