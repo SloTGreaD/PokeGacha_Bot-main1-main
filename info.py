@@ -51,4 +51,25 @@ GenerationProbabilities = {"Common": '600',
                             "SuperRare": '30',
                             "Epic": '19',  # вероятности должны быть написаны целыми числами
                             "Legendary":'1'}
+POKEMON_BY_TYPE = {
+    'Normal⭕': ['Pidgey', 'Pidgeotto', 'Pidgeot', 'Rattata', 'Raticate', 'Spearow', 'Fearow', 'Jigglypuff', 'Wigglytuff', 'Meowth', 'Persian', 'Doduo', 'Dodrio', 'Lickitung', 'Chansey', 'Kangaskhan', 'Tauros', 'Ditto', 'Eevee', 'Porygon', 'Snorlax'],
+    'Fire🔥': ['Charmander', 'Charmeleon', 'Charizard', 'Vulpix', 'Ninetales', 'Growlithe', 'Arcanine', 'Ponyta', 'Rapidash', 'Magmar', 'Flareon'],
+    'Water💧': ['Squirtle', 'Wartortle', 'Blastoise', 'Psyduck', 'Golduck', 'Poliwag', 'Poliwhirl', 'Poliwrath', 'Tentacool', 'Tentacruel', 'Slowpoke', 'Slowbro', 'Seel', 'Dewgong', 'Shellder', 'Cloyster', 'Krabby', 'Kingler', 'Horsea', 'Seadra', 'Goldeen', 'Seaking', 'Staryu', 'Starmie', 'Magikarp', 'Gyarados', 'Lapras', 'Vaporeon', 'Omastar'],
+    'Electric⚡': ['Pikachu', 'Raichu', 'Magnemite', 'Magneton', 'Voltorb', 'Electrode', 'Electabuzz', 'Jolteon'],
+    'Grass🌿': ['Bulbasaur', 'Ivysaur', 'Venusaur', 'Oddish', 'Gloom', 'Vileplume', 'Paras', 'Parasect', 'Bellsprout', 'Weepinbell', 'Victreebel', 'Exeggcute', 'Exeggutor', 'Tangela'],
+    'Ice❄️': ['Dewgong', 'Cloyster', 'Jynx', 'Lapras', 'Articuno'],
+    'Fighting🥊': ['Mankey', 'Primeape', 'Poliwrath', 'Machop', 'Machoke', 'Machamp', 'Hitmonlee', 'Hitmonchan'],
+    'Poison☠️': ['Bulbasaur', 'Ivysaur', 'Venusaur', 'Weedle', 'Kakuna', 'Beedrill', 'Ekans', 'Arbok', 'Nidoran♀', 'Nidorina', 'Nidoqueen', 'Nidoran♂', 'Nidorino', 'Nidoking', 'Zubat', 'Golbat', 'Oddish', 'Gloom', 'Vileplume', 'Venonat', 'Venomoth', 'Bellsprout', 'Weepinbell', 'Victreebel', 'Tentacool', 'Tentacruel', 'Grimer', 'Muk', 'Gastly', 'Haunter', 'Gengar', 'Koffing', 'Weezing'],
+    'Ground🌱': ['Sandshrew', 'Sandslash', 'Nidoqueen', 'Nidoking', 'Diglett', 'Dugtrio', 'Geodude', 'Graveler', 'Golem', 'Onix', 'Cubone', 'Marowak', 'Rhyhorn', 'Rhydon'],
+    'Flying🪽': ['Charizard', 'Butterfree', 'Pidgey', 'Pidgeotto', 'Pidgeot', 'Spearow', 'Fearow', 'Zubat', 'Golbat', 'Farfetch’d', 'Doduo', 'Dodrio', 'Scyther', 'Gyarados', 'Aerodactyl'],
+    'Psychic🌀': ['Abra', 'Kadabra', 'Alakazam', 'Slowpoke', 'Slowbro', 'Drowzee', 'Hypno', 'Exeggcute', 'Exeggutor', 'Mr. Mime', 'Jynx', 'Mewtwo', 'Mew'],
+    'Bug🐛': ['Caterpie', 'Metapod', 'Butterfree', 'Weedle', 'Kakuna', 'Beedrill', 'Paras', 'Parasect', 'Venonat', 'Venomoth', 'Scyther', 'Pinsir'],
+    'Rock🪨': ['Geodude', 'Graveler', 'Golem', 'Onix', 'Rhyhorn', 'Rhydon', 'Omanyte', 'Omastar', 'Kabuto', 'Kabutops', 'Aerodactyl'],
+    'Ghost👻': ['Gastly', 'Haunter', 'Gengar'],
+    'Dragon🐉': ['Dratini', 'Dragonair', 'Dragonite'],
+    'Dark🌑': [], # В первом поколении не было темного типа
+    'Steel🛡️': [], # В первом поколении не было стального типа
+    'Fairy🧚': ['Clefairy', 'Clefable', 'Jigglypuff', 'Wigglytuff', 'Mr. Mime']
+}
+
 
