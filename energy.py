@@ -1,24 +1,14 @@
-import random
-import asyncio
-import aiosqlite
-from datetime import datetime, timedelta
 
+import asyncio
+
+from datetime import datetime, timedelta
+from functions import AsyncDatabaseConnection
 from info import POKEMON_LIST, RARITY_DICT, GenerationProbabilities
+
 
 DATABASE_FILE = "pokedex.sql"
 
 
-class AsyncDatabaseConnection:
-    def __init__(self, db_name):
-        self.db_name = db_name
-
-    async def __aenter__(self):
-        self.conn = await aiosqlite.connect(self.db_name)
-        return await self.conn.cursor()
-
-    async def __aexit__(self, exc_type, exc_val, exc_tb):
-        await self.conn.commit()
-        await self.conn.close()
 
 
 async def check_bread_availability(user_id):  # проверяет наличие хлеба
@@ -61,6 +51,7 @@ async def use_energy(user_id):
     async with AsyncDatabaseConnection(DATABASE_FILE) as cur:
         update_query = 'UPDATE items SET energy = energy - 1 WHERE user_id = ? AND energy > 0'
         await cur.execute(update_query, (user_id,))
+
 
 async def use_bread(user_id):
     async with AsyncDatabaseConnection(DATABASE_FILE) as cur:
@@ -141,3 +132,8 @@ async def energy_number(user_id):
             count = int(result[0])
     return count
 
+async def main():
+    await add_energy(668210174, 100)
+
+if __name__ == "__main__":
+    asyncio.run(main())
