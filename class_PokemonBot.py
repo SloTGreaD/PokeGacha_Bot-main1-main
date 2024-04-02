@@ -63,12 +63,12 @@ class PokemonBot:
                     if "message to delete not found" not in str(e).lower():
                         print(f"Ошибка при удалении сообщения: {e}")
                 finally:
-                    pass
-                   #self.reset_candy_usage(chat_id)  # Сброс счетчика здесь
+                   
+                   self.reset_candy_usage(chat_id)  # Сброс счетчика здесь
 
                 if random.choice([True, False]):
                     await self.show_catch_or_skip_buttons(chat_id, pokebol_count, energy_level, call)
-                    #self.reset_candy_usage(chat_id)  # Сбрасываем счетчик использования Candy
+                    self.reset_candy_usage(chat_id)  # Сбрасываем счетчик использования Candy
 
                 else:
                     await self.back_to_start(chat_id)
@@ -92,9 +92,14 @@ class PokemonBot:
 
         if chat_id in self.states and 'gen' in self.states[chat_id]:
             gen = self.states[chat_id]['gen']
+            user_id = call.message.chat.id
 
             success_rate = info.POKEMON_CATCH_SUCCESS_RATES[gen]
-            success = random.choices([True, False], weights=[success_rate, 100 - success_rate], k=1)[0]
+            candy_used = self.candy_usage.get(user_id, 0)
+            catch_chance = min(success_rate + 20 * candy_used, 100)  # Увеличение шанса на 20% за каждое использование "Candy", но не более 100%
+            print(f"Base chance: {success_rate}, Candy used: {candy_used}, New catch chance: {catch_chance}")
+
+            success = random.choices([True, False], weights=[catch_chance, 100 - catch_chance], k=1)[0]
             if call.data == 'retry':
                 await bot.delete_message(call.message.chat.id, call.message.message_id)
             if success:
@@ -177,13 +182,13 @@ class PokemonBot:
         
         # Отображение случайного покемона с весами
         chosen_pokemon, gen = functions.determine_pokemon()  # Функция определяет покемона и его редкость
-        user_id = call.message.chat.id
+        #user_id = call.message.chat.id
         base_chance = info.POKEMON_CATCH_SUCCESS_RATES[gen]
 
         # Проверяем использование "Candy" и увеличиваем шанс поимки соответственно
-        candy_used = self.candy_usage.get(user_id, 0)
-        catch_chance = min(base_chance + 20 * candy_used, 100)  # Увеличение шанса на 20% за каждое использование "Candy", но не более 100%
-        print(f"Base chance: {base_chance}, Candy used: {candy_used}, New catch chance: {catch_chance}")
+        # candy_used = self.candy_usage.get(user_id, 0)
+        # catch_chance = min(base_chance + 20 * candy_used, 100)  # Увеличение шанса на 20% за каждое использование "Candy", но не более 100%
+        # print(f"Base chance: {base_chance}, Candy used: {candy_used}, New catch chance: {catch_chance}")
         # Собираем информацию о типах выбранного покемона
         pokemon_types = [type for type, pokemons in info.POKEMON_BY_TYPE.items() if chosen_pokemon in pokemons]
         pokemon_types_str = ', '.join(pokemon_types) if pokemon_types else 'Unknown'
@@ -196,7 +201,7 @@ class PokemonBot:
             gen_info = info.GENERATIONS.get(chosen_pokemon, '')
             gen_info = f' ({gen_info})' if gen_info else ''
             sent_message = await bot.send_message(chat_id,
-                                   f"You found a {chosen_pokemon}{gen_info}!\nType: {pokemon_types_str}.\n\nIt has '{gen}' rarity.\n\nPokebols:   {pokebol_count}🔴⚪\nEnergy level:   {energy_level}🔋\nCapture chance: {catch_chance}%",
+                                   f"You found a {chosen_pokemon}{gen_info}!\nType: {pokemon_types_str}.\n\nIt has '{gen}' rarity.\n\nPokebols:   {pokebol_count}🔴⚪\nEnergy level:   {energy_level}🔋\nCapture chance: {base_chance}%",
                                    reply_markup=markup)
             self.states[chat_id] = {'state': 'choose_catch_or_skip', 'message_id': sent_message.message_id, 'gen': gen}
         self.add_message_id(chat_id, sent_message.message_id)
