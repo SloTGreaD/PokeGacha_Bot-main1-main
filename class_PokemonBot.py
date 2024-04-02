@@ -182,13 +182,8 @@ class PokemonBot:
         
         # Отображение случайного покемона с весами
         chosen_pokemon, gen = functions.determine_pokemon()  # Функция определяет покемона и его редкость
-        #user_id = call.message.chat.id
         base_chance = info.POKEMON_CATCH_SUCCESS_RATES[gen]
-
-        # Проверяем использование "Candy" и увеличиваем шанс поимки соответственно
-        # candy_used = self.candy_usage.get(user_id, 0)
-        # catch_chance = min(base_chance + 20 * candy_used, 100)  # Увеличение шанса на 20% за каждое использование "Candy", но не более 100%
-        # print(f"Base chance: {base_chance}, Candy used: {candy_used}, New catch chance: {catch_chance}")
+        
         # Собираем информацию о типах выбранного покемона
         pokemon_types = [type for type, pokemons in info.POKEMON_BY_TYPE.items() if chosen_pokemon in pokemons]
         pokemon_types_str = ', '.join(pokemon_types) if pokemon_types else 'Unknown'
@@ -334,7 +329,7 @@ class PokemonBot:
             if has_candy:
                 await candy.use_candy(user_id)
                 self.candy_usage[user_id] = self.candy_usage.get(user_id, 0) + 1
-                await call.answer("Вы использовали Candy! Шанс увеличился на 20%", show_alert=True)
+                await call.answer("Вы использовали Candy! Шанс увеличился на 20%\nВнимание! Максимальный шанс 100%", show_alert=True)
                 return True
             else:
                 await call.answer("У вас нет предмета Candy!", show_alert=True)
