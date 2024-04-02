@@ -46,6 +46,8 @@ async def check_spaghetti_availability(user_id):  # проверяет нали�
             return True
         else:
             return False
+
+
         
 async def use_energy(user_id):
     async with AsyncDatabaseConnection(DATABASE_FILE) as cur:
@@ -131,6 +133,7 @@ async def energy_number(user_id):
         if result:
             count = int(result[0])
     return count
+
 
 async def main():
     await add_energy(668210174, 100)

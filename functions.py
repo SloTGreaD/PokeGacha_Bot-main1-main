@@ -46,7 +46,7 @@ async def create_all_tables():
             )
             ''')
         await cur.execute('CREATE TABLE IF NOT EXISTS users (name varchar(50))')
-        items = 'CREATE TABLE IF NOT EXISTS items (user_id INTEGER, last_adventure_date VARCHAR(12) DEFAULT "10/12/15", last_rest_date VARCHAR(12) DEFAULT "10/12/15", energy INTEGER DEFAULT 5, bread INTEGER DEFAULT 5, rice INTEGER DEFAULT 5, ramen INTEGER DEFAULT 5, spaghetti INTEGER DEFAULT 5)'
+        items = 'CREATE TABLE IF NOT EXISTS items (user_id INTEGER, last_adventure_date VARCHAR(12) DEFAULT "10/12/15", last_rest_date VARCHAR(12) DEFAULT "10/12/15", energy INTEGER DEFAULT 5, bread INTEGER DEFAULT 5, rice INTEGER DEFAULT 5, ramen INTEGER DEFAULT 5, spaghetti INTEGER DEFAULT 5, candy INTEGER DEFAULT 5)'
         await cur.execute(items)
 
 
@@ -97,41 +97,6 @@ async def capture_failed(user_id):
         if pokebol_count > 0:
             num2 = "UPDATE number_of_pokemons SET pokebols = pokebols - 1 WHERE user_id = ?"
             await cur.execute(num2, (user_id,))
-
-
-async def capture_pokemon_by_rarity(user_id, found_pokemon, gen):  # все еще не понимаю зачем эта функция
-    async with AsyncDatabaseConnection(DATABASE_FILE) as cur:
-        # Проверяем количество pokebols у пользователя
-        query = 'SELECT pokebols FROM number_of_pokemons WHERE user_id = ?'
-        await cur.execute(query, (user_id,))
-        pokebol_count = await cur.fetchone()
-
-        if pokebol_count and pokebol_count[0] > 0:
-            found_pokemon = found_pokemon.lower()
-            # Выполняем логику захвата в зависимости от редкости
-            capture_query = None
-            if gen == 'Common':
-                capture_query = "INSERT INTO dif_rarity (user_id, common) VALUES (?, ?)"
-            elif gen == 'Uncommon':
-                capture_query = "INSERT INTO dif_rarity (user_id, uncommon) VALUES (?, ?)"
-            elif gen == 'Rare':
-                capture_query = "INSERT INTO dif_rarity (user_id, rare) VALUES (?, ?)"
-            elif gen == 'SuperRare':
-                capture_query = "INSERT INTO dif_rarity (user_id, superrare) VALUES (?, ?)"
-            elif gen == 'Epic':
-                capture_query = "INSERT INTO dif_rarity (user_id, epic) VALUES (?, ?)"
-            elif gen == 'Legendary':
-                capture_query = "INSERT INTO dif_rarity (user_id, legendary) VALUES (?, ?)"
-
-            if capture_query:
-                await cur.execute(capture_query, (user_id, found_pokemon))
-                success = True
-            else:
-                success = False
-        else:
-            success = False
-
-    return success
 
 
 async def show_capture_time(user_id):  # показывает время когда словил каждого покемона
