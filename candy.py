@@ -6,7 +6,7 @@ DATABASE_FILE = "pokedex.sql"
 
 async def check_candy_availability(user_id):  
     async with AsyncDatabaseConnection(DATABASE_FILE) as cursor:
-        await cursor.execute("SELECT bread FROM items WHERE user_id = ?", (user_id,))
+        await cursor.execute("SELECT candy FROM items WHERE user_id = ?", (user_id,))
         result = await cursor.fetchone()
         if result and result[0] > 0:
             return True
