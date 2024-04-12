@@ -10,6 +10,7 @@ from info import bot, dp
 from class_reply import under_keyboard
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
+from aiogram.utils.exceptions import MessageToEditNotFound
 under_keyboard_class = under_keyboard()
 
 
@@ -59,6 +60,7 @@ class PokemonBot:
                     await bot.delete_message(call.message.chat.id, call.message.message_id)
                     if call.data == 'skip':
                         await bot.delete_message(call.message.chat.id, call.message.message_id - 1)
+                
                 except Exception as e:
                     if "message to delete not found" not in str(e).lower():
                         print(f"Ошибка при удалении сообщения: {e}")
@@ -328,7 +330,7 @@ class PokemonBot:
             has_candy = await candy.check_candy_availability(user_id)
             if has_candy:
                 await candy.use_candy(user_id)
-                self.candy_usage[user_id] = self.candy_usage.get(user_id, 0) + 1
+                # self.candy_usage[user_id] = self.candy_usage.get(user_id, 0) + 1
                 await call.answer("Вы использовали Candy! Шанс увеличился на 20%\nВнимание! Максимальный шанс 100%", show_alert=True)
                 return True
             else:

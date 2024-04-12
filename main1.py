@@ -6,12 +6,19 @@ from class_reply import under_keyboard
 import info
 import functions
 import energy
+import regestration
 from class_PokemonBot import PokemonBot
-from aiogram.utils.exceptions import MessageNotModified
+from aiogram.utils.exceptions import MessageNotModified, MessageToEditNotFound
+from aiogram.dispatcher.filters.state import State, StatesGroup
+from aiogram.dispatcher import FSMContext
+
 
 # Загрузка токена из переменных окружения
 from info import bot, dp
 under_keyboard_class = under_keyboard()
+
+class Form(StatesGroup):
+    waiting_for_nickname = State()
 
 async def main():
     try:
@@ -31,9 +38,25 @@ if __name__ == "__main__":
     # Обработчики сообщений и колбеков
     @dp.message_handler(commands=['start'])
     async def start_wrapper(message: types.Message):
+        user_id = message.from_user.id
+        if await regestration.check_user_nickname(user_id):
+            # Пользователь уже зарегистрирован, продолжаем обычную логику
+            await message.reply("Добро пожаловать обратно! Вы уже зарегистрированы.")
+            await pokemon_bot.start(message)
+        else:
+            # Пользователь не зарегистрирован, запрашиваем никнейм
+            await message.reply("Похоже, вы здесь впервые! Пожалуйста, введите ваш никнейм для регистрации.")
+            await Form.waiting_for_nickname.set()
 
+        
+    @dp.message_handler(state=Form.waiting_for_nickname)
+    async def process_nickname(message: types.Message, state: FSMContext):
+        nickname = message.text
+        user_id = message.from_user.id
+        await regestration.register_new_user(user_id, nickname)
+        await message.reply("Вы успешно зарегистрированы!")
+        await state.finish()
         await pokemon_bot.start(message)
-
 
     @dp.message_handler(commands=['📱Pokedex'])
     async def deploy_pokedex(message: types.Message):

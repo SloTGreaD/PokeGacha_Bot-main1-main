@@ -1,11 +1,13 @@
 from aiogram import Bot, Dispatcher
+from aiogram.contrib.fsm_storage.memory import MemoryStorage
 
 MISHA_BOT_API = '5629818025:AAE3CAZFs6uhMcWZodFUdpKhSJu5awmGK_o'
 POKE_BOT_API = "6831587612:AAEUQ4m30-Pajetdnw0AwZ4omaNmzVkc-4o"
 
 TOKEN = POKE_BOT_API
 bot = Bot(token=TOKEN)
-dp = Dispatcher(bot)
+storage = MemoryStorage()  # Создание экземпляра MemoryStorage
+dp = Dispatcher(bot, storage=storage)
 
 HelpInfo = """
 <b>Помощь по использованию бота:</b>

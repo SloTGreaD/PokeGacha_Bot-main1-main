@@ -34,21 +34,21 @@ def determine_pokemon():  # возвращает рандомное имя по�
 
 async def create_all_tables():
     async with AsyncDatabaseConnection(DATABASE_FILE) as cur:
-        query = "CREATE TABLE IF NOT EXISTS number_of_pokemons (user_id INTEGER, last_access_date VARCHAR(12) DEFAULT '10/12/15', pokebols INTEGER DEFAULT 5, "
+        query = "CREATE TABLE IF NOT EXISTS number_of_pokemons (user_id INTEGER, nickname INTEGER, last_access_date VARCHAR(12) DEFAULT '10/12/15', pokebols INTEGER DEFAULT 5, "
         query += "".join(f'{item.lower()} INTEGER DEFAULT 0,' for item in POKEMON_LIST)
         query = query.rstrip(',') + ")"
         await cur.execute(query)
         await cur.execute('''
             CREATE TABLE IF NOT EXISTS captured_pokemons (
             user_id INTEGER,
+            nickname INTEGER,
             found_pokemon VARCHAR(20),
             captured_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
             ''')
         await cur.execute('CREATE TABLE IF NOT EXISTS users (name varchar(50))')
-        items = 'CREATE TABLE IF NOT EXISTS items (user_id INTEGER, last_adventure_date VARCHAR(12) DEFAULT "10/12/15", last_rest_date VARCHAR(12) DEFAULT "10/12/15", energy INTEGER DEFAULT 5, bread INTEGER DEFAULT 5, rice INTEGER DEFAULT 5, ramen INTEGER DEFAULT 5, spaghetti INTEGER DEFAULT 5, candy INTEGER DEFAULT 5)'
+        items = 'CREATE TABLE IF NOT EXISTS items (user_id INTEGER, nickname INTEGER, last_adventure_date VARCHAR(12) DEFAULT "10/12/15", last_rest_date VARCHAR(12) DEFAULT "10/12/15", energy INTEGER DEFAULT 5, bread INTEGER DEFAULT 5, rice INTEGER DEFAULT 5, ramen INTEGER DEFAULT 5, spaghetti INTEGER DEFAULT 5, candy INTEGER DEFAULT 5)'
         await cur.execute(items)
-
 
 async def add_user_to_number_of_pokemons(user_id):
     async with AsyncDatabaseConnection(DATABASE_FILE) as cur:
