@@ -6,7 +6,7 @@ POKE_BOT_API = "6831587612:AAEUQ4m30-Pajetdnw0AwZ4omaNmzVkc-4o"
 
 TOKEN = POKE_BOT_API
 bot = Bot(token=TOKEN)
-storage = MemoryStorage()  # Создание экземпляра MemoryStorage
+storage = MemoryStorage()
 dp = Dispatcher(bot, storage=storage)
 
 HelpInfo = """
@@ -19,7 +19,6 @@ HelpInfo = """
 /get_pokebols - получить 5 бесплатных покемонов за ежедневный вход 
 /my_pokemons - посмотреть всех своих покемонов
 /rarity - все редкости и шанс выпадения
-/pictures - показать покемонов в виде картинки 
 /have_a_rest - отдохнуть
 <b>Дополнительные команды:</b>
 

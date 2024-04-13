@@ -13,25 +13,6 @@ class under_keyboard:
     def __init__(self):
         pass
 
-    async def reply_start(self, message):
-        markup = ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
-        # Добавление каждой кнопки в отдельный ряд
-        button = KeyboardButton('/🏃‍♂️Start_Adventure')
-        button1 = KeyboardButton('/📱Pokedex')
-        markup.row(button, button1)  # Добавление кнопок в один ряд
-    
-        # Добавление кнопок в другой ряд
-        button2 = KeyboardButton('/🎒My_pokemons')
-        button3 = KeyboardButton('/🔴⚪Get_Pokebolls')
-        markup.row(button2, button3)  # Добавление кнопок в один ряд
-
-        # Если хотите добавить одну кнопку в ряд, просто используйте add
-        button4 = KeyboardButton('/🍽️Meal')
-        
-        markup.add(button4)  # Добавит кнопку в новый ряд
-        await bot.send_message(message.chat.id,
-                       f"Hi, {message.from_user.first_name}!\nWelcome to Poké-Hunter. This bot allows you to search and catch Pokémons.\nPress (🏃‍♂️Start_Adventure) to start your adventure.\nPress /help for more information.",
-                       reply_markup=markup)
         
     def reply_menu(self):
         markup = ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=False)
@@ -47,9 +28,8 @@ class under_keyboard:
         markup.add(button5) 
         return markup 
     
-    async def back_to_menu(self, message):
-        
-        
+    async def back_to_menu(self):
+
         markup = ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=False)
         # Добавление каждой кнопки в отдельный ряд
         button = KeyboardButton('/🏃‍♂️Start_Adventure')
@@ -63,10 +43,21 @@ class under_keyboard:
 
         # Если хотите добавить одну кнопку в ряд, просто используйте add
         button4 = KeyboardButton('/🍽️Meal')
-        
-        markup.add(button4)  # Добавит кнопку в новый ряд
-        
-        await bot.send_message(chat_id=message.chat.id, text='Going to Menu', reply_markup=markup)
-
+        button5 = KeyboardButton('/📋Profile')
+        markup.add(button4, button5)  # Добавит кнопку в новый ряд
+        return markup
+    
+    async def profile_menu(self):
+        markup = ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
+        button = KeyboardButton('/📝Change_Nickname')
+        button1 = KeyboardButton('/🏠Main_Menu')
+        markup.add(button, button1)
+        return markup
+    
+    async def cancel_change_nickname(self):
+        markup = ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
+        button = KeyboardButton('/❌Discard_Changes')
+        markup.add(button)
+        return markup
 
         

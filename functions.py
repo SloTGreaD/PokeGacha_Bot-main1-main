@@ -50,6 +50,7 @@ async def create_all_tables():
         items = 'CREATE TABLE IF NOT EXISTS items (user_id INTEGER, nickname INTEGER, last_adventure_date VARCHAR(12) DEFAULT "10/12/15", last_rest_date VARCHAR(12) DEFAULT "10/12/15", energy INTEGER DEFAULT 5, bread INTEGER DEFAULT 5, rice INTEGER DEFAULT 5, ramen INTEGER DEFAULT 5, spaghetti INTEGER DEFAULT 5, candy INTEGER DEFAULT 5)'
         await cur.execute(items)
 
+
 async def add_user_to_number_of_pokemons(user_id):
     async with AsyncDatabaseConnection(DATABASE_FILE) as cur:
         check_query = 'SELECT * FROM number_of_pokemons WHERE user_id = ?'
@@ -179,9 +180,11 @@ async def list_pictures_rarity(user_id, requested_rarity):
         if pokemons is None:
             return "You haven't caught any Pokémon yet."
 
-        list_of_rarity_pokemons = [[pokemon_name, poke_count] for poke_count, pokemon_name in
-                                   zip(pokemons[3:], POKEMON_LIST) if
-                                   poke_count > 0 and pokemon_name in RARITY_DICT[requested_rarity]]
+        if requested_rarity == "All":
+            list_of_rarity_pokemons = [[pokemon_name ,poke_count] for poke_count, pokemon_name in
+                               zip(pokemons[3:], POKEMON_LIST) if poke_count > 0]
+        else:
+            list_of_rarity_pokemons = [[pokemon_name, poke_count] for poke_count, pokemon_name in zip(pokemons[3:], POKEMON_LIST) if poke_count > 0 and pokemon_name in RARITY_DICT[requested_rarity]]
 
         return list_of_rarity_pokemons
 
@@ -254,7 +257,9 @@ async def main():
     # print(show_pokedex(668210174))
     # print(time_until_next_midnight())
     # await add_pokebols(668210174, 10)
+    # await capture_pokemon(668210174, "Ditto")
     print(await pokebols_number(668210174))
+
 
 if __name__ == "__main__":
     asyncio.run(main())
