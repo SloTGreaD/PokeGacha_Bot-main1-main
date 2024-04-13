@@ -182,9 +182,9 @@ async def list_pictures_rarity(user_id, requested_rarity):
 
         if requested_rarity == "All":
             list_of_rarity_pokemons = [[pokemon_name ,poke_count] for poke_count, pokemon_name in
-                               zip(pokemons[3:], POKEMON_LIST) if poke_count > 0]
+                               zip(pokemons[4:], POKEMON_LIST) if poke_count > 0]
         else:
-            list_of_rarity_pokemons = [[pokemon_name, poke_count] for poke_count, pokemon_name in zip(pokemons[3:], POKEMON_LIST) if poke_count > 0 and pokemon_name in RARITY_DICT[requested_rarity]]
+            list_of_rarity_pokemons = [[pokemon_name, poke_count] for poke_count, pokemon_name in zip(pokemons[4:], POKEMON_LIST) if poke_count > 0 and pokemon_name in RARITY_DICT[requested_rarity]]
 
         return list_of_rarity_pokemons
 
@@ -198,8 +198,8 @@ async def show_pokemons_rarity(user_id, requested_rarity):
         if pokemons is None:
             return "You haven't caught any Pokémon yet."
 
-        pokebols = f'Your {requested_rarity} rarity pokemons:\nPokebols: {pokemons[2]}'
-        text = (f'{pokemon_name}: {poke_count}' for poke_count, pokemon_name in zip(pokemons[3:], POKEMON_LIST) if
+        pokebols = f'Your {requested_rarity} rarity pokemons:\nPokebols: {pokemons[3]}'
+        text = (f'{pokemon_name}: {poke_count}' for poke_count, pokemon_name in zip(pokemons[4:], POKEMON_LIST) if
                 poke_count > 0 and pokemon_name in RARITY_DICT[requested_rarity])
         final_text = [pokebols] + [f'{num}. {pokemon_and_amount}' for num, pokemon_and_amount in enumerate(text, 1)]
 
